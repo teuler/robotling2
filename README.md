@@ -2,7 +2,7 @@
 
 This is work in progress ...
 
-[![Preview](https://www.youtube.com/watch?v=-2sHaOSrgGA/0.jpg)](https://www.youtube.com/watch?v=-2sHaOSrgGA "Preview")
+[![Preview](https://i9.ytimg.com/vi/-2sHaOSrgGA/mq1.jpg?sqp=CKzGuIMG&rs=AOn4CLCgC6T1GxkQHbXyykFkJma4jguScg)](https://www.youtube.com/watch?v=-2sHaOSrgGA "Preview")
 
 Please find some details in the [Wiki](https://github.com/teuler/robotling2/wiki).
 
