@@ -1,6 +1,6 @@
 # Robotling 2
 
-"Rexbotling" is work in progress ...
+This is work in progress ...
 
 Please find some details in the [Wiki](https://github.com/teuler/robotling2/wiki).
 
