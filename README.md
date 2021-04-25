@@ -5,7 +5,7 @@ Robotling-2 is a small, simple 6-legged robot using the new Raspberry Pi microco
 Note that this is work in progress ... Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details.
 
 
-[<img src="https://github.com/teuler/robotling2/blob/main/pictures/GIF_assembly.gif" alt="Drawing" width="360"/>](https://github.com/teuler/robotling2/blob/main/pictures/GIF_assembly.gif)[<img src="https://github.com/teuler/robotling2/blob/main/pictures/video1_tn.png" width="480"/>](https://www.youtube.com/watch?v=-2sHaOSrgGA "Preview")
+[<img src="https://github.com/teuler/robotling2/blob/main/pictures/GIF_assembly.gif" alt="Drawing" width="320"/>](https://github.com/teuler/robotling2/blob/main/pictures/GIF_assembly.gif)[<img src="https://github.com/teuler/robotling2/blob/main/pictures/video1_tn.png" width="440"/>](https://www.youtube.com/watch?v=-2sHaOSrgGA "Preview")
 
 ### Release Notes
 
