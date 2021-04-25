@@ -9,6 +9,9 @@ Note that this is work in progress ... Check out the [Wiki](https://github.com/t
 
 ### Release Notes
 
+* 2021-04-25
+  - "Arm" for distance sensor added (i.e. the [multi-pixel evo mini](https://www.terabee.com/shop/lidar-tof-range-finders/teraranger-evo-mini/))
+  - Battery compartment modified such that it can also carry a [1000 mAh single-cell LiPo](https://www.exp-tech.de/zubehoer/batterien-akkus/lipo-akkus/5801/3.7v-1000mah-lithium-polymer-akku-mit-jst-ph-anschluss).
 * 2021-04-10
   - PCB slighly updated
   - Video and new pictures added
