@@ -52,7 +52,7 @@ class Camera(CameraBase):
           .format(driver.name, s, __version__,
                   "ok" if driver.isReady else "FAILED") +ansi.BLACK)
 
-  def detectBlobs(self, kernel=None, nsd=1.0):
+  def detect_blobs(self, kernel=None, nsd=1.0):
     """ Acquire image and detect blobs, using filter (`kernel`), and threshold
         for blob detection of `nsd` (in number of standard deviations)
     """
@@ -65,18 +65,18 @@ class Camera(CameraBase):
       self._blobList = blob.find_blobs(self._img64x1, self._dxy, nsd)
 
   @property
-  def blobsRaw(self):
+  def blobs_raw(self):
     """ Return raw blob list
     """
     return self._blobList
 
   @property
-  def imageLinear(self):
+  def image_linear(self):
     """ Return current image as a 1D list
     """
     return self._img64x1
 
-  def getBestBlob(self, minArea, minP):
+  def get_best_blob(self, minArea, minP):
     """ Return the (corrected) position of the best blob that meets the
         given criteria: minimal area `minArea` and probabilty >= `minP`
         (check known issues with `blob`; the "probability" can exceed 1.0 ...)

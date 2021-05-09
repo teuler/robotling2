@@ -334,11 +334,11 @@ class LSM9DS0:
     return 21.0 +self.raw_temperature()/8
 
   @property
-  def isReady(self):
+  def is_ready(self):
     return self._isReady
 
   @property
-  def channelCount(self):
+  def channel_count(self):
     return CHAN_COUNT
 
   @property

@@ -26,7 +26,7 @@ class SharpIRRangingSensor(SensorBase):
     super().__init__(driver, chan)
     self._type = "IR range"
     self._coef = array.array('f', [1,1,1,1])
-    self._maxV = driver.maxValue
+    self._maxV = driver.max_value
 
   @property
   def range_raw(self):

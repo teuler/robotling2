@@ -215,11 +215,11 @@ class AMG88XX:
     return self._imgData
 
   @property
-  def isReady(self):
+  def is_ready(self):
     return self._isReady
 
   @property
-  def channelCount(self):
+  def channel_count(self):
     return _PIXEL_ARRAY_WIDTH *_PIXEL_ARRAY_HEIGHT
 
   @property

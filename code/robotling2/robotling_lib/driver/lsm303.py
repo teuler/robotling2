@@ -251,11 +251,11 @@ class LSM303(object):
     self._write_u8(_ADDRESS_MAG, _REG_MAG_CRA_REG_M, reg_m)
 
   @property
-  def isReady(self):
+  def is_ready(self):
     return self._isReady
 
   @property
-  def channelCount(self):
+  def channel_Count(self):
     return CHAN_COUNT
 
   @property

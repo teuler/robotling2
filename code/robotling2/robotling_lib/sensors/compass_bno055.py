@@ -46,7 +46,7 @@ class Compass(SensorBase):
                   "ok" if self._isReady else "FAILED") +ansi.BLACK)
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  def getHeading(self, tilt=False, calib=False, hires=True):
+  def get_heading(self, tilt=False, calib=False, hires=True):
     """ Returns heading with or w/o tilt compensation and/or calibration,
         if available.
         NOTE: The BNO055 has built-in tilt compensation and is pre-calibra-
@@ -58,7 +58,7 @@ class Compass(SensorBase):
     return self._BNO055.euler[0]
 
   #@timed_function
-  def getHeading3D(self, calib=False):
+  def get_heading_3d(self, calib=False):
     """ Returns heading, pitch and roll in [°] with or w/o calibration,
         if available.
         NOTE: The BNO055 has built-in tilt compensation and is pre-calibra-
@@ -70,7 +70,7 @@ class Compass(SensorBase):
     hd, pit, rol = self._BNO055.euler
     return (rb.RBL_OK, hd, pit, rol)
 
-  def getPitchRoll(self, radians=False):
+  def get_pitch_roll(self, radians=False):
     """ Returns error code, pitch and roll in [°] as a tuple
     """
     if not self._isReady:
@@ -82,11 +82,11 @@ class Compass(SensorBase):
       return (rb.RBL_OK, -1, pit, rol)
 
   @property
-  def isReady(self):
+  def is_ready(self):
     return self._isReady
 
   @property
-  def channelCount(self):
+  def channel_count(self):
     return CHAN_COUNT
 
 # ----------------------------------------------------------------------------

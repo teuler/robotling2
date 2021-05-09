@@ -40,7 +40,7 @@ class Compass(SensorBase):
 
   def __init__(self, driver):
     super().__init__(driver, 0)
-    if driver.isReady:
+    if driver.is_ready:
       # Initialize
       self._acc     = array.array('i', [0,0,0])
       self._mag     = array.array('i', [0,0,0])
@@ -82,7 +82,7 @@ class Compass(SensorBase):
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   #@timed_function
   @micropython.native
-  def getHeading(self, tilt=False, calib=False, hires=True):
+  def get_heading(self, tilt=False, calib=False, hires=True):
     """ Returns heading with or w/o tilt compensation and/or calibration,
         if available.
         NOTE: The parameter `hires` has no effect; it exists only for
@@ -114,7 +114,7 @@ class Compass(SensorBase):
     if tilt:
       # Tilt compensate magnetic sensor measurements
       # NOTE: Not yet working correctly
-      _, _, pit, rol = self.getPitchRoll(radians=True)
+      _, _, pit, rol = self.get_pitch_roll(radians=True)
       xmc = xmn *cos(pit) +ymn *sin(pit) *sin(rol) +zmn *sin(pit) *cos(rol)
       ymc = zmn *sin(rol) -ymn* cos(rol)
 
@@ -130,11 +130,11 @@ class Compass(SensorBase):
 
   #@timed_function
   @micropython.native
-  def getHeading3D(self, calib=False):
+  def get_heading_3d(self, calib=False):
     """ Returns heading, pitch and roll in [°] with or w/o calibration,
         if available.
     """
-    if self.getHeading(tilt=True, calib=calib) == rb.RBL_ERR_DEVICE_NOT_READY:
+    if self.get_heading(tilt=True, calib=calib) == rb.RBL_ERR_DEVICE_NOT_READY:
       return (rb.RBL_ERR_DEVICE_NOT_READY, 0, 0, 0)
     else:
       #print(self._heading)
@@ -143,7 +143,7 @@ class Compass(SensorBase):
 
   #@timed_function
   @micropython.native
-  def getPitchRoll(self, radians=False):
+  def get_pitch_roll(self, radians=False):
     """ Returns error code, pitch and roll in [°] as a 4-element tuple.
         Note that the second element is -1, such that the data format
         is compatible with that returned by `getHeading3D`
@@ -170,7 +170,7 @@ class Compass(SensorBase):
       return (rb.RBL_OK, -1, self._pitch, self._roll)
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  def streamCalibrationData(self, n=1000):
+  def stream_calibration_data(self, n=1000):
     # Initialize
     xg = 0
     yg = 0

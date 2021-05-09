@@ -246,7 +246,7 @@ class DotStar:
       self.show()
     self.auto_write = auto_write
 
-  def getColorFromWheel(self, iWheel):
+  def get_color_from_wheel(self, iWheel):
     """ Get an RGB color from a wheel-like color representation
     """
     iWheel = iWheel % 255

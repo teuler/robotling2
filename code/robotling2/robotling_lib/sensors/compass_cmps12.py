@@ -93,7 +93,7 @@ class Compass(SensorBase):
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   #@timed_function
   @micropython.native
-  def getHeading(self, tilt=False, calib=False, hires=True):
+  def get_heading(self, tilt=False, calib=False, hires=True):
     """ Returns heading with or w/o tilt compensation and/or calibration,
         if available.
         NOTE: The CMPS12 has built-in tilt compensation and is pre-calibra-
@@ -117,7 +117,7 @@ class Compass(SensorBase):
 
   #@timed_function
   @micropython.native
-  def getHeading3D(self, calib=False):
+  def get_heading_3d(self, calib=False):
     """ Returns heading, pitch and roll in [°] with or w/o calibration,
         if available.
         NOTE: The CMPS12 has built-in tilt compensation and is pre-calibra-
@@ -138,7 +138,7 @@ class Compass(SensorBase):
 
   #@timed_function
   @micropython.native
-  def getPitchRoll(self, radians=False):
+  def get_pitch_roll(self, radians=False):
     """ Returns error code, pitch and roll in [°] as a tuple
     """
     if not self._isReady:
@@ -155,11 +155,11 @@ class Compass(SensorBase):
 
 
   @property
-  def isReady(self):
+  def is_ready(self):
     return self._isReady
 
   @property
-  def channelCount(self):
+  def channel_count(self):
     return CHAN_COUNT
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

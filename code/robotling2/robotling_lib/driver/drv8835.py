@@ -64,7 +64,7 @@ class DRV8835(object):
                   "ok" if self._mode != MODE_NONE else "FAILED"))
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  def setMotorSpeed(self, speed=[0, 0]):
+  def set_motor_speed(self, speed=[0, 0]):
     """ Set speed and direction for both motors, from -100% to 100%;
         Use `None` to indicates that speed of that motor should be kept.
     """
@@ -89,7 +89,7 @@ class DRV8835(object):
       self.pinB_EN.duty_percent = BSp
 
   @property
-  def channelCount(self):
+  def channel_count(self):
     return CHAN_COUNT
 
 # ----------------------------------------------------------------------------
