@@ -6,7 +6,9 @@
 # Copyright (c) 2020 Thomas Euler
 # 2020-08-08, v1
 # 2020-12-20, v1.1, More robust managment of incoming data
-# 2021-03-14, v1.2, compatibility w/ rp2
+# 2021-03-14, v1.2, Compatibility w/ rp2
+# 2021-03-14, v1.3, Instead of counting invalid readings, give the time when
+#                   the last valid measurement was taken
 # ----------------------------------------------------------------------------
 import array
 from micropython import const
@@ -24,7 +26,7 @@ if pf.languageID == pf.LNG_MICROPYTHON:
     from machine import UART
   else:
     from robotling_lib.platform.esp32.busio import UART
-  from time import sleep_ms
+  from time import sleep_ms, ticks_ms
   import select
 elif pf.languageID == pf.LNG_CIRCUITPYTHON:
   from robotling_lib.platform.circuitpython.busio import UART
@@ -33,7 +35,7 @@ else:
   print("ERROR: No matching hardware libraries in `platform`.")
 
 # pylint: disable=bad-whitespace
-__version__ = "0.1.2.0"
+__version__ = "0.1.3.0"
 
 CHIP_NAME   = "tera_evomini"
 CHAN_COUNT  = const(4)
@@ -41,9 +43,6 @@ CHAN_COUNT  = const(4)
 
 # pylint: disable=bad-whitespace
 # User facing constants/module globals.
-TERA_DIST_NEG_INF   = const(0x0000)
-TERA_DIST_POS_INF   = const(0xFFFF)
-TERA_DIST_INVALID   = const(0x0001)
 TERA_POLL_WAIT_MS   = const(5)
 
 # Internal constants and register values:
@@ -62,6 +61,12 @@ _TERA_RANGE_LONG    = bytearray([0x00, 0x61, 0x03, 0xE9])
 # ----------------------------------------------------------------------------
 class TeraRangerEvoMini:
   """Driver for the TeraRanger Evo Mini 4-pixel distance sensor."""
+  # pylint: disable=bad-whitespace
+  # User facing constants/module globals.
+  TERA_DIST_NEG_INF   = const(0x0000)
+  TERA_DIST_POS_INF   = const(0xFFFF)
+  TERA_DIST_INVALID   = const(0x0001)
+  # pylint: enable=bad-whitespace
 
   def __init__(self, id, tx, rx, nPix=4, short=True):
     """ Requires pins and channel for unused UART
@@ -69,6 +74,7 @@ class TeraRangerEvoMini:
     self._uart = UART(id, tx=tx, rx=rx, baudrate=_TERA_BAUD)
     self._nPix = nPix
     self._short = short
+    self._nInvalData = 0
 
     # Set pixel mode and prepare buffer
     if self._nPix == 4:
@@ -81,7 +87,7 @@ class TeraRangerEvoMini:
     sleep_ms(_TERA_CMD_WAIT_MS)
     self._nBufExp = self._nPix*2 +2
     self._dist = array.array("i", [0]*self._nPix)
-    self._inval = array.array("i", [0]*self._nPix)
+    self._tLast = array.array("I", [0]*self._nPix)
     self._sInBuf = b""
 
     # Set binary mode for results
@@ -146,7 +152,7 @@ class TeraRangerEvoMini:
       tmp = self._sInBuf.split(_TERA_START_CHR)
       nDt = len(tmp)
       if nDt == 0:
-        self.__logError("Invalid data?")
+        self._nInvalData += 1
         return
 
       if len(tmp[nDt -1]) < nExp -1:
@@ -154,7 +160,7 @@ class TeraRangerEvoMini:
         self._sInBuf = _TERA_START_CHR +tmp[nDt -1]
         iDt = nDt -2
         if len(tmp[iDt]) < nExp -1:
-          self.__logError("Incomplete data?")
+          self._nInvalData += 1
           return
       else:
         # Ends with a complete dataset or is only one dataset
@@ -162,6 +168,7 @@ class TeraRangerEvoMini:
         iDt = nDt -1
 
       # Decode reading
+      self._nInvalData = 0
       np = self._nPix
       if np == 4:
         d = struct.unpack_from('>HHHH', tmp[iDt][0:8]) #buf[1:9])
@@ -174,20 +181,19 @@ class TeraRangerEvoMini:
         self._dist = d
       else:
         # Check if values are valid and keep track of last valid reading
+        t = ticks_ms()
         for iv,v in enumerate(d):
-          if v == TERA_DIST_INVALID:
-            self._inval[iv] += 1
-          else:
+          if v is not TERA_DIST_INVALID:
             self._dist[iv] = v
-            self._inval[iv] = 0
+            self._tLast[iv] = t
 
   @property
   def distances(self):
     return self._dist
 
   @property
-  def invalids(self):
-    return self._inval
+  def last_valid_ms(self):
+    return self._tLast
 
   def __logError(self, msg):
     print(ansi.RED + "{0}|Error: {1}".format(CHIP_NAME, msg) +ansi.BLACK)

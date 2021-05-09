@@ -22,6 +22,10 @@ FONT_SIZE1     = const(2)
 FONT_SIZE2     = const(3)
 FONT_Y_OFFS1   = const(14)
 FONT_Y_OFFS2   = const(22)
+PAN_INFO_X     = const(2)
+PAN_INFO_Y     = const(2)
+PAN_SENS_Y     = const(2)
+PAN_SENS_W     = const(80)
 
 BUFFER         = bytearray(_display.get_width() *_display.get_height() *2)
 # pylint: enable=bad-whitespace
@@ -74,24 +78,24 @@ class GUI(object):
     """ Show version etc.
     """
     y = 2
-    _display.set_pen(cfg.COL_TXT_HI)
+    _display.set_pen(cfg.COL_TXT_LO)
     s = "{0} v{1:.1f}".format(cfg.RBL2_INFO, cfg.RBL2_VERSION)
     _display.text(s, 2, y, 200, FONT_SIZE1)
     y += FONT_Y_OFFS1
     if cfg.HW_CORE == 0:
       _display.text("core 0 only", 2, y, 200, FONT_SIZE1)
     else:
-      _display.set_pen(cfg.COL_TXT_RED)
+      _display.set_pen(cfg.COL_TXT_OTHER)
       _display.text("cores 0+1", 2, y, 200, FONT_SIZE1)
     _display.update()
 
-  def show_info(self, sState, sExt=""):
-    """ Show info
+  def show_general_info(self, sState, sExt="", vbus=False, power_V=0):
+    """ Show general info
     """
-    x = 2
-    y = 2 +FONT_Y_OFFS1 *2
-    w = self._dx -80
-    h = self._dy
+    x = PAN_INFO_X
+    y = PAN_INFO_Y +FONT_Y_OFFS1 *2
+    w = self._dx -PAN_SENS_W -2
+    h = FONT_Y_OFFS2 *3 -1
     try:
       # Clear part of screen
       _display.set_clip(x, y, w, h)
@@ -99,11 +103,82 @@ class GUI(object):
       _display.clear()
 
       # Show state info
-      _display.set_pen(cfg.COL_TXT_LO)
+      _display.set_pen(cfg.COL_TXT)
       _display.text(sState, x,y, 100, FONT_SIZE2)
+      y += FONT_Y_OFFS2
       if len(sExt) > 0:
-        y += FONT_Y_OFFS2
         _display.text(sExt, x,y, 100, FONT_SIZE2)
+      y += FONT_Y_OFFS2
+
+      # Show power info
+      if vbus:
+        _display.set_pen(cfg.COL_TXT_OTHER)
+      _display.text("VBUS" if vbus else " -- ", x,y, 100, FONT_SIZE2)
+      _display.set_pen(cfg.COL_TXT)
+      if power_V < 2:
+        _display.set_pen(cfg.COL_TXT_WARN)
+      x = 80
+      s = "{0:.1f}V".format(power_V) if power_V > 0 else " -- "
+      _display.text(s, x,y, 100, FONT_SIZE2)
+
+    finally:
+      _display.update()
+      _display.remove_clip()
+
+  def show_msg(self, msg):
+    """ Show a message
+    """
+    x = PAN_INFO_X
+    y = PAN_INFO_Y +FONT_Y_OFFS1 *2 +FONT_Y_OFFS2 *3
+    w = self._dx -PAN_SENS_W -2
+    h = FONT_Y_OFFS2 +2
+    try:
+      # Clear part of screen
+      _display.set_clip(x, y, w, h)
+      _display.set_pen(cfg.COL_BKG_LO)
+      _display.clear()
+
+      # Show message
+      _display.set_pen(cfg.COL_TXT)
+      _display.text(msg, x,y, 100, FONT_SIZE2)
+
+    finally:
+      _display.update()
+      _display.remove_clip()
+
+  def show_distance_evo(self, dist):
+    """ Show distance info from evo mini sensor
+    """
+    x = self._dx -PAN_SENS_W +1
+    y = PAN_SENS_Y
+    w = PAN_SENS_W -1
+    h = self._dy
+    dy = h //4
+    try:
+      # Clear part of screen
+      _display.set_clip(x, y, w, h)
+      _display.set_pen(cfg.COL_BKG_LO)
+      _display.clear()
+
+      for i in range(4):
+        s = "{0}".format(dist[i])
+        if dist[i] < 0:
+          s = "n/a"
+          ws = 0
+          ctxt = cfg.COL_TXT_LO
+          _display.set_pen(cfg.COL_TXT_WARN)
+        elif dist[i] == cfg.EVOMINI_MAX_MM:
+          ws = w -2
+          ctxt = cfg.COL_TXT_HI
+          _display.set_pen(cfg.COL_TXT_WARN)
+        else:
+          ws = int(min(dist[i], cfg.EVOMINI_MAX_MM) /cfg.EVOMINI_MAX_MM *(w-2))
+          ctxt = cfg.COL_TXT_HI
+          _display.set_pen(cfg.COL_TXT_LO)
+
+        _display.rectangle(x+1, y+i*dy+1, ws, dy-2)
+        _display.set_pen(ctxt)
+        _display.text(s, x+4, y+7 +i*dy, 100, FONT_SIZE2)
 
     finally:
       _display.update()

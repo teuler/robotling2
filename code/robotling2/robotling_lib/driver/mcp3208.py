@@ -7,6 +7,7 @@
 # 2018-09-20, v1
 # 2018-11-25, v1.1, now uses dio_*.py to access machine
 # 2020-01-01, v1.2, micropython.native
+# 2021-05-08, v1.2, property naming changed
 # ----------------------------------------------------------------------------
 import array
 from micropython import const
@@ -22,7 +23,7 @@ else:
   print(ansi.RED +"ERROR: No matching libraries in `platform`." +ansi.BLACK)
 
 # pylint: disable=bad-whitespace
-__version__     = "0.1.2.0"
+__version__     = "0.1.2.1"
 
 CHIP_NAME       = "mcp3208"
 CHAN_COUNT      = const(8)
@@ -50,7 +51,7 @@ class MCP3208(object):
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   #@timed_function
-  def readADC(self, chan):
+  def read_adc(self, chan):
     """ Returns A/D value of channel `chan` or `-1`, if an error occurs
     """
     cm = self._cmd
@@ -102,19 +103,19 @@ class MCP3208(object):
     return self._data
 
   @property
-  def channelCount(self):
+  def channel_count(self):
     return CHAN_COUNT
 
   @property
-  def maxValue(self):
+  def max_value(self):
     return MAX_VALUE
 
   @property
-  def channelMask(self):
+  def channel_mask(self):
     return self._channelMask
 
-  @channelMask.setter
-  def channelMask(self, value):
+  @channel_mask.setter
+  def channel_mask(self, value):
     value &= 0xff
     self._channelMask = value
 

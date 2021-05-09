@@ -69,5 +69,9 @@ def core_temperature_deg():
   val = ADC(CORE_TEMP).read_u16()
   return 27 -(val *3.3 /65535 -0.706) /0.001721
 
+def is_vbus_present():
+  from machine import Pin
+  return Pin(board.VBUS, Pin.IN).value()
+
 
 # ----------------------------------------------------------------------------

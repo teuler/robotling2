@@ -15,7 +15,7 @@ class SensorBase(object):
 
   def __init__(self, driver, chan=0):
     self._driver = driver
-    if not driver == None:
+    if driver:
       self._chan = min(max(chan, 0), driver.channelCount-1)
     else:
       self._chan = chan

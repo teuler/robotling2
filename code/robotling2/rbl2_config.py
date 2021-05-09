@@ -29,10 +29,26 @@ SRV_RANGE_DEG  = [(-40, 40), (-40, 40), (-20, 20)]
 SRV_ID         = bytearray([0,1,2])
 SRV_PIN        = bytearray([board.D21, board.D10, board.D2])
 
-COL_TXT_LO     = const(57351)  #0xffff
-COL_TXT_HI     = const(40965)  #0x20ff
-COL_TXT_RED    = const(248)
-COL_BKG_LO     = const(0)      #0x22db
+COL_TXT_LO     = const(40965)
+COL_TXT        = const(57351)
+COL_TXT_HI     = const(63951)
+COL_TXT_OTHER  = const(14595)
+COL_TXT_WARN   = const(248)
+COL_BKG_LO     = const(0)
+
+# Devices
+DEVICES        = ["evo_mini"]
+
+# TeraRanger EvoMini
+EVOMINI_UART   = const(1)
+EVOMINI_TX     = board.D4
+EVOMINI_RX     = board.D5
+EVOMINI_MIN_MM = const(10)
+EVOMINI_MAX_MM = const(500)
+EVOMINI_R_LOW  = const(0)
+EVOMINI_L_HIGH = const(1)
+EVOMINI_L_LOW  = const(2)
+EVOMINI_R_HIGH = const(3)
 # pylint: enable=bad-whitespace
 
 # ----------------------------------------------------------------------------

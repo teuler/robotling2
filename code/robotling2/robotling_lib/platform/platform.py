@@ -22,10 +22,11 @@ class Platform(object):
   ENV_UNKNOWN           = const(0)
   ENV_ESP32_UPY         = const(1)
   ENV_ESP32_TINYPICO    = const(2)
-  ENV_CPY_FEATHERS2     = const(3)
-  ENV_CPY_SAM51         = const(4)
-  ENV_CPY_NRF52         = const(5)
-  ENV_MPY_RP2           = const(6)
+  ENV_ESP32_S2          = const(3)
+  ENV_CPY_FEATHERS2     = const(4)
+  ENV_CPY_SAM51         = const(5)
+  ENV_CPY_NRF52         = const(6)
+  ENV_MPY_RP2           = const(7)
 
   LNG_UNKNOWN           = const(0)
   LNG_MICROPYTHON       = const(1)
@@ -40,6 +41,8 @@ class Platform(object):
     if self.sysInfo[0] == "esp32":
       if self.sysInfo[4].upper().find("TINYPICO") >= 0:
         self._envID = ENV_ESP32_TINYPICO
+      elif self.sysInfo[4].upper().find("S2") >= 0:
+        self._envID = ENV_ESP32_S2
       else:
         self._envID = ENV_ESP32_UPY
     if self.sysInfo[0] == "samd51":
@@ -51,7 +54,8 @@ class Platform(object):
     if self.sysInfo[0] == "rp2":
       self._envID = ENV_MPY_RP2
 
-    if self._envID in [ENV_ESP32_UPY, ENV_ESP32_TINYPICO, ENV_MPY_RP2]:
+    if self._envID in \
+      [ENV_ESP32_UPY, ENV_ESP32_TINYPICO, ENV_MPY_RP2, ENV_ESP32_S2]:
       self._lngID = LNG_MICROPYTHON
     elif self._envID in [ENV_CPY_SAM51, ENV_CPY_NRF52, ENV_CPY_FEATHERS2]:
       self._lngID = LNG_CIRCUITPYTHON

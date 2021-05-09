@@ -19,12 +19,12 @@ from robotling_lib.motors.servo_manager import ServoManager
 __version__  = "0.1.0.0"
 
 #                Servos,  Positions, Dur, Mode,           Next, Jump
-GAIT_SEQ     = [([2],     [ 10],     125, glb.STATE_WALKING,   1,   4),     # 0
-                ([0,1],   [ 20, 20], 250, glb.STATE_WALKING,   2,   None),  # 1
-                ([2],     [-10],     125, glb.STATE_WALKING,   3,   4),     # 2
-                ([0,1],   [-20,-20], 250, glb.STATE_WALKING,   0,   None),  # 3
-                ([0,1],   [  0,  0], 250, glb.STATE_STOPPING,  5,   5),     # 4
-                ([2],     [  0],     250, glb.STATE_STOPPING, -1,  None)]   # 5
+GAIT_SEQ     = [([2],     [ 10],     250, glb.STATE_WALKING,   1,   4),     # 0
+                ([0,1],   [ 20, 20], 400, glb.STATE_WALKING,   2,   None),  # 1
+                ([2],     [-10],     250, glb.STATE_WALKING,   3,   4),     # 2
+                ([0,1],   [-20,-20], 400, glb.STATE_WALKING,   0,   None),  # 3
+                ([0,1],   [  0,  0], 400, glb.STATE_STOPPING,  5,   5),     # 4
+                ([2],     [  0],     400, glb.STATE_STOPPING, -1,  None)]   # 5
 GS_SRV       = const(0)
 GS_POS       = const(1)
 GS_DUR       = const(2)
@@ -82,23 +82,23 @@ class Gait(object):
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def walk(self):
-    """ Start walking, defined by the properties `direction` (e.g. [-1,1] left
-        turn, [1,-1] right turn,[-1,-1] backwards, etc.) and `velocity` (<0,
-        slower, >1 faster)
+    """ Start walking, defined by the properties `direction` (e.g. -1=left
+        turn, +1=right turn, 0=straight forward) and `velocity` (<0, slower,
+        >1 faster)
     """
     self._state = glb.STATE_WALKING if self._dir == 0 else glb.STATE_TURNING
     self._iStep = 0
-    self._spin()
+    self.spin()
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def stop(self):
     """ Stop movement gracefully
     """
     self._state = glb.STATE_STOPPING
-    self._spin()
+    self.spin()
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  def _spin(self):
+  def spin(self):
     """ Keep robot moving; needs to be called frequently
     """
     st = self._state

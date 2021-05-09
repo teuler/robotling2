@@ -9,8 +9,7 @@
 # ----------------------------------------------------------------------------
 import time
 import array
-import _thread
-from machine import Pin
+from machine import Pin, ADC
 import rbl2_config as cfg
 import rbl2_global as glb
 import rbl2_gait as gait
@@ -21,21 +20,28 @@ from robotling_lib.platform.rp2 import board_rp2 as board
 __version__  = "0.1.0.0"
 
 # Global variables to communicate with task on core 1
+# (Do not access other than via the `RobotBase` instance!!)
 g_state_gait = glb.STATE_NONE
 g_state      = glb.STATE_NONE
 g_cmd        = glb.CMD_NONE
-g_move_dir   = 0.
+g_counter    = 0
 g_gui        = rbl2_gui.GUI()
+g_dist_evo   = None
+g_gait       = gait.Gait()
+g_move_dir   = 0.
+g_move_vel   = 2
+g_do_exit    = False
+g_led        = Pin(board.D11, Pin.OUT)
 # ...
 # pylint: enable=bad-whitespace
 
 # ----------------------------------------------------------------------------
-class RobotBase(object):
+class Robot(object):
   """Robot representation"""
 
   def __init__(self, core=1, use_gui=True, verbose=False):
-    global g_state, g_state_gait
-    global g_gui
+    global g_state
+    global g_dist_evo
 
     # Initializing ...
     g_state = glb.STATE_NONE
@@ -43,6 +49,12 @@ class RobotBase(object):
     self._core = core
     self._spin_period_ms = 0
     self._spin_t_last_ms = 0
+    self._do_autoupdate_gui = False
+    self._no_servos = False
+
+    # Initializing some hardware
+    self._pinVBUSPresent = Pin(board.VBUS, Pin.IN)
+    self._pinPower_V = ADC(Pin(board.BAT))
 
     # Initialize picodisplay, if any
     if g_gui:
@@ -50,7 +62,22 @@ class RobotBase(object):
       g_gui.LED.startPulse(150)
       g_gui.on(True)
       g_gui.show_version()
-      g_gui.show_info("n/a")
+      g_gui.show_general_info("n/a")
+
+    # Initialize devices
+    if "evo_mini" in cfg.DEVICES:
+      from robotling_lib.sensors.teraranger_evomini import TeraRangerEvoMini
+      g_dist_evo = TeraRangerEvoMini(
+          cfg.EVOMINI_UART,
+          tx=Pin(cfg.EVOMINI_TX), rx=Pin(cfg.EVOMINI_RX)
+        )
+      time.sleep_ms(1000)
+      '''
+      self._evo_inf_neg_pos = [
+          TeraRangerEvoMini.TERA_DIST_NEG_INF,
+          TeraRangerEvoMini.TERA_DIST_POS_INF
+        ]
+      '''
 
     # Depending on `core`, the thread that updates the hardware either runs
     # on the second core (`core` == 1) or on the same core as the main program
@@ -58,6 +85,7 @@ class RobotBase(object):
     # needs to be used and called frequencly to keep the hardware updated.
     if self._core == 1:
       # Starting hardware thread on core 1 and wait until it is ready
+      import _thread
       self._Task = _thread.start_new_thread(self._task_core1, ())
       glb.toLog("Hardware thread on core 1 starting ...")
       while not g_state_gait == glb.STATE_IDLE:
@@ -65,8 +93,7 @@ class RobotBase(object):
       glb.toLog("Hardware thread ready.")
     else:
       # Do not use core 1 for hardware thread; instead the main loop has to
-      # call `sleep_ms()` frequently.
-      self._prepare()
+      # call `sleep_ms()` frequently. Here, prime that sleep function ...
       self.sleep_ms(period_ms=cfg.MIN_UPDATE_MS, callback=self._task_core0)
       glb.toLog("Hardware co-uses core 0.")
 
@@ -79,36 +106,107 @@ class RobotBase(object):
       self.power_down()
       counter = 0
       while g_state is not glb.STATE_OFF:
-        assert counter < 200, "Locked in `RobotBase.deinit`"
-        time.sleep_ms(50)
+        assert counter > 1000, "Locked in `RobotBase.deinit`"
+        counter += 1
+        self.sleep_ms(50)
     if g_gui:
       g_gui.deinit()
+      g_gui.LED.RGB = (60,0,0)
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   @property
   def state(self):
-    global g_state
+    """ Returns `state` as a constant `STATE_xxx` (defined in `rbl2_global.py`)
+    """
     return g_state
 
   @property
   def direction(self):
-    global g_move_dir
+    """ Returns current movement direction (see `turn()` for details)
+    """
     return g_move_dir
 
   @property
-  def GUI(self):
-    global g_gui
-    return g_gui
+  def distances_mm(self):
+    """ Returns the distances (in [mm]) as an array. The lengths of the array
+        depends on the sensor: e.g. the TeraRanger Evo mini reports 4 values.
+    """
+    if g_dist_evo:
+      _d = array.array("i", g_dist_evo.distances)
+      for i in range(len(_d)):
+        if _d[i] == g_dist_evo.TERA_DIST_POS_INF or _d[i] > cfg.EVOMINI_MAX_MM:
+          _d[i] = cfg.EVOMINI_MAX_MM
+        elif _d[i] == g_dist_evo.TERA_DIST_NEG_INF:
+          _d[i] = cfg.EVOMINI_MIN_MM
+        elif _d[i] == g_dist_evo.TERA_DIST_INVALID:
+          _d[i] = -1
+      return _d
+    else:
+      return []
+
+  @property
+  def is_connected_via_usb(self):
+    """ Returns True if connected via USB cable (and VSYS is present)
+    """
+    return self._pinVBUSPresent.value()
+
+  @property
+  def power_V(self):
+    """ Returns the input voltage that powers the microcontroller
+        TODO: Fix reported voltage (unclear why not correct)
+    """
+    return self._pinPower_V.read_u16() /65536 *3
+
+  # GUI-related properties
+  @property
+  def autoupdate_gui(self):
+    """ Endable/disable autoupdate of GUI during `sleep_ms`
+    """
+    return self._do_autoupdate_gui
+  @autoupdate_gui.setter
+  def autoupdate_gui(self, val :bool):
+    self._do_autoupdate_gui = val
+
+  @property
+  def is_pressed_A(self):
+    return g_gui.display.is_pressed(g_gui.display.BUTTON_A) if g_gui else False
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  def update_display(self):
+    """ If display is connected, show important status information there
+    """
+    if g_gui:
+      vbus = self._pinVBUSPresent.value()
+      pw_V = self.power_V
+      g_gui.show_general_info(glb.STATE_STRS[g_state],
+          "{0:.1f}".format(g_move_dir) if g_state is glb.STATE_TURNING else "",
+          vbus, pw_V
+        )
+      if g_dist_evo:
+        g_gui.show_distance_evo(self.distances_mm)
+        '''
+        g_gui.show_distance_evo(
+            g_dist_evo.distances, g_dist_evo.last_valid_ms,
+            self._evo_inf_neg_pos
+          )
+        '''
+
+  def show_message(self, msg):
+    """ Show a message on the display
+    """
+    if g_gui:
+      g_gui.show_msg(msg)
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def move_forward(self, wait_for_idle=False):
     """ Move straight forward using current gait and velocity.
         If `wait_for_idle` is True, then trigger action only when idle.
     """
-    global g_cmd, g_move_dir, g_state_gait
+    global g_cmd, g_move_dir
     if not wait_for_idle or g_state_gait == glb.STATE_IDLE:
       g_move_dir = 0.
-      g_cmd = glb.CMD_MOVE
+      if not self._no_servos:
+        g_cmd = glb.CMD_MOVE
 
   def turn(self, dir, wait_for_idle=False):
     """ Turn using current gait and velocity; making with `dir` < 0 a left and
@@ -116,85 +214,32 @@ class RobotBase(object):
         the turning strength (e.g. 1.=turn in place, 0.2=walk in a shallow
         curve). If `wait_for_idle` is True, then trigger action only when idle.
     """
-    global g_cmd, g_move_dir, g_state_gait
+    global g_cmd, g_move_dir
     if not wait_for_idle or g_state_gait == glb.STATE_IDLE:
       g_move_dir = max(min(dir, 1.0), -1.0)
-      g_cmd = glb.CMD_MOVE
+      if not self._no_servos:
+        g_cmd = glb.CMD_MOVE
 
   def stop(self):
     """ Stop if walking
     """
-    global g_cmd, g_state_gait
+    global g_cmd
     if g_state_gait in [glb.STATE_WALKING, glb.STATE_TURNING]:
       g_cmd = glb.CMD_STOP
+
+  def turn_servos_off(self):
+    g_gait._SM.turn_all_off()
+
+  def no_servos(self, val):
+    self._no_servos = val
 
   def power_down(self):
     """ Power down and end task
     """
-    global g_cmd
+    global g_cmd, g_move_dir
     glb.toLog("Request hardware thread power down ...")
     g_move_dir = 0.
     g_cmd = glb.CMD_POWER_DOWN
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  def _prepare(self):
-    global g_state_gait
-
-    # Initialize hardware
-    self._g = gait.Gait()
-    self._g.velocity = 2
-    self._do_exit = False
-    g_state_gait = glb.STATE_IDLE
-
-    # Initialize activity LED
-    self._LED = Pin(board.D11, Pin.OUT)
-
-  def _task_core0(self):
-    global g_state_gait, g_state
-    global g_cmd, g_move_dir
-    global g_gui
-
-    if g_state == glb.STATE_OFF:
-      return
-    if g_state is not glb.STATE_POWERING_DOWN:
-      self._LED.value(1)
-
-      # Handle new command, if any ...
-      if g_cmd is not glb.CMD_NONE:
-
-        if g_cmd == glb.CMD_MOVE:
-          self._g.direction = g_move_dir
-          self._g.walk()
-          g_state = glb.STATE_WALKING if g_move_dir == 0 else glb.STATE_TURNING
-
-        if g_cmd == glb.CMD_STOP:
-          self._g.stop()
-          g_state = glb.STATE_STOPPING
-
-        if g_cmd == glb.CMD_POWER_DOWN:
-          # Stop and power down ...
-          self._g.stop()
-          self._do_exit = True
-
-        g_cmd = glb.CMD_NONE
-
-      # Wait for transitions to update state accordingly ...
-      if g_state == glb.STATE_STOPPING and g_state_gait == glb.STATE_IDLE:
-        g_state = glb.STATE_IDLE
-      if g_state == glb.STATE_IDLE and self._do_exit:
-        g_state = glb.STATE_POWERING_DOWN
-
-      # Spin everyone who needs spinning
-      self._g._spin()
-      g_state_gait = self._g.state
-      g_gui.spin()
-      self._LED.value(0)
-
-    else:
-      # Finalize ...
-      self._g.deinit()
-      self._LED.value(0)
-      g_state = glb.STATE_OFF
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def sleep_ms(self, dur_ms=0, period_ms=-1, callback=None):
@@ -222,6 +267,8 @@ class RobotBase(object):
 
         # Update
         self._spin_callback()
+        if self._do_autoupdate_gui:
+          self.update_display()
         self._spin_t_last_ms = time.ticks_ms()
 
         # Check if sleep time is left ...
@@ -234,6 +281,8 @@ class RobotBase(object):
         while time.ticks_diff(time.ticks_us(), t_us) < (d_us -p_us):
           time.sleep_us(p_us)
           self._spin_callback()
+          if self._do_autoupdate_gui:
+            self.update_display()
 
         # Remember time of last update
         self._spin_t_last_ms = time.ticks_ms()
@@ -244,6 +293,8 @@ class RobotBase(object):
         d_ms = time.ticks_diff(time.ticks_ms(), self._spin_t_last_ms)
         if d_ms > self._spin_period_ms:
           self._spin_callback()
+          if self._do_autoupdate_gui:
+            self.update_display()
           self._spin_t_last_ms = time.ticks_ms()
 
     elif period_ms > 0:
@@ -256,59 +307,116 @@ class RobotBase(object):
       time.sleep_ms(dur_ms)
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  def _task_core0(self):
+    """ This is the core 0-version of the routine that keeps the hardware
+        updated and responds to commands (e.g. move, turn).
+        - It is called by `sleep_ms()`.
+        - It uses only global variables for external objects to stay
+          compatible with the core-1 version below.
+    """
+    global g_state_gait, g_state, g_counter
+    global g_cmd, g_do_exit
+
+    if g_state == glb.STATE_OFF:
+      return
+    if g_state is not glb.STATE_POWERING_DOWN:
+      g_led.value(1)
+
+      # Handle new command, if any ...
+      if g_cmd is not glb.CMD_NONE:
+
+        if g_cmd == glb.CMD_MOVE:
+          g_gait.direction = g_move_dir
+          g_gait.walk()
+          g_state = glb.STATE_WALKING if g_move_dir == 0 else glb.STATE_TURNING
+
+        if g_cmd in [glb.CMD_STOP, glb.CMD_POWER_DOWN]:
+          # Stop or power down ...
+          g_gait.stop()
+          g_state = glb.STATE_STOPPING
+          g_do_exit = g_cmd == glb.CMD_POWER_DOWN
+
+        g_cmd = glb.CMD_NONE
+
+      # Wait for transitions to update state accordingly ...
+      if g_state == glb.STATE_STOPPING and g_state_gait == glb.STATE_IDLE:
+        g_state = glb.STATE_IDLE
+      if g_state == glb.STATE_IDLE and g_do_exit:
+        g_state = glb.STATE_POWERING_DOWN
+
+      # Spin everyone who needs spinning
+      g_gait.spin()
+      g_state_gait = g_gait.state
+      if g_dist_evo:
+        g_dist_evo.update(raw=True)
+      g_gui.spin()
+      g_counter += 1
+      g_led.value(0)
+
+    else:
+      # Finalize ...
+      g_gait.deinit()
+      g_led.value(0)
+      g_state = glb.STATE_OFF
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   @staticmethod
   def _task_core1():
-    global g_state_gait, g_state
-    global g_cmd, g_move_dir
-    global g_gui
-
-    # Initialize hardware
-    g = gait.Gait()
-    g.velocity = 2
-
-    # Initialize activity LED
-    LED = Pin(board.D11, Pin.OUT)
+    """ This is the core 1-version of the routine that keeps the hardware
+        updated and responds to commands (e.g. move, turn).
+        - It runs independently on core 1; in parallel to the main program on
+          core 0.
+        - It communicates via global variables.
+    """
+    global g_state_gait, g_state, g_counter
+    global g_cmd, g_do_exit
 
     # Loop
-    do_exit = False
+    g_do_exit = False
     try:
       try:
         g_state_gait = glb.STATE_IDLE
 
         # Main loop ...
         while g_state is not glb.STATE_POWERING_DOWN:
-          LED.value(1)
+          g_led.value(1)
 
           # Handle new command, if any ...
           if g_cmd is not glb.CMD_NONE:
 
             if g_cmd == glb.CMD_MOVE:
-              g.direction = g_move_dir
-              g.walk()
-              g_state = glb.STATE_WALKING if g_move_dir == 0 else glb.STATE_TURNING
+              g_gait.direction = g_move_dir
+              g_gait.walk()
+              if g_move_dir == 0:
+                g_state = glb.STATE_WALKING
+              else:
+                g_state = glb.STATE_TURNING
 
             if g_cmd == glb.CMD_STOP:
-              g.stop()
+              g_gait.stop()
               g_state = glb.STATE_STOPPING
 
             if g_cmd == glb.CMD_POWER_DOWN:
               # Stop and power down ...
-              g.stop()
-              do_exit = True
+              g_gait.stop()
+              g_do_exit = True
 
             g_cmd = glb.CMD_NONE
 
           # Wait for transitions to update state accordingly ...
           if g_state == glb.STATE_STOPPING and g_state_gait == glb.STATE_IDLE:
             g_state = glb.STATE_IDLE
-          if g_state == glb.STATE_IDLE and do_exit:
+          if g_state == glb.STATE_IDLE and g_do_exit:
             g_state = glb.STATE_POWERING_DOWN
 
           # Spin everyone who needs spinning
-          g._spin()
-          g_state_gait = g.state
+          g_gait.spin()
+          g_state_gait = g_gait.state
+          if g_dist_evo:
+            g_dist_evo.update(raw=False)
           g_gui.spin()
-          LED.value(0)
+          g_counter += 1
+          g_led.value(0)
 
           # Wait for a little while
           time.sleep_ms(25)
@@ -317,8 +425,8 @@ class RobotBase(object):
         pass
 
     finally:
-      g.deinit()
-      LED.value(0)
+      g_gait.deinit()
+      g_led.value(0)
       glb.toLog("Hardware thread ended.")
       g_state = glb.STATE_OFF
 
