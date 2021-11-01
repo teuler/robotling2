@@ -10,6 +10,8 @@ Check out video(s)
 
 ### Release Notes
 
+* 2021-11-01
+  - New sensor head for Time-of-flight distance sensors by Pololu [#4064](https://www.pololu.com/product/4064/specs)
 * 2021-04-25
   - "Arm" for distance sensor added (i.e. the [multi-pixel evo mini](https://www.terabee.com/shop/lidar-tof-range-finders/teraranger-evo-mini/))
   - Battery compartment modified such that it can also carry a [1000 mAh single-cell LiPo](https://www.exp-tech.de/zubehoer/batterien-akkus/lipo-akkus/5801/3.7v-1000mah-lithium-polymer-akku-mit-jst-ph-anschluss).
