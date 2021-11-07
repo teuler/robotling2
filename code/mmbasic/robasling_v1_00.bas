@@ -1,7 +1,7 @@
 ' Robotling2
 ' The MIT Licence (MIT)
 ' Copyright (c) 2021 Thomas Euler
-' 2021-11-07 - v0.15, Initial release
+' 2021-11-07 - v1.00, Initial release
 '
 ' ---------------------------------------------------------------------------
 ' Assumed options:
@@ -143,7 +143,7 @@ InitRobot:
   R.Log NONE, "Initializing ..."
 
   ' Version information
-  Const R.Version      = 0.13
+  Const R.Version      = 1.00
   Const R.Name$        = "Robotling2"
   R.Log INFO, R.Name$ +" v" +Str$(R.Version, 1,2)
 
