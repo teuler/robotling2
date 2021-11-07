@@ -10,7 +10,6 @@ Note that this is work in progress ... Check out the [Wiki](https://github.com/t
 
 * 2021-11-07
   - Code written in [MMBasic](https://mmbasic.com/) added. It uses the Pico version (["PicoMite"](https://geoffg.net/picomite.html)) version of the MMBasic interpreter written Geoff Graham and Peter Mather (see also [repository](https://github.com/UKTailwind/PicoMite)).
-* 2021-11-01
   - New sensor head for Time-of-flight distance sensors by Pololu [#4064](https://www.pololu.com/product/4064/specs)
 * 2021-04-25
   - "Arm" for distance sensor added (i.e. the [multi-pixel evo mini](https://www.terabee.com/shop/lidar-tof-range-finders/teraranger-evo-mini/))
