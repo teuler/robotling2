@@ -6,8 +6,6 @@ Note that this is work in progress ... Check out the [Wiki](https://github.com/t
 
 [<img src="https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif)[<img src="https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png)
 
-https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png
-
 ### Release Notes
 
 * 2021-11-07
