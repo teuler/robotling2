@@ -10,6 +10,8 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2021-11-20
+  - [MMBasic program explained (German)](https://github.com/teuler/robotling2/wiki/Kommentare-zum-MMBasic-Programm) added to Wiki.
 * 2021-11-07
   - Code v1.xx written in [MMBasic](https://mmbasic.com/) added. It uses the Pico version (["PicoMite"](https://geoffg.net/picomite.html)) version of the MMBasic interpreter written Geoff Graham and Peter Mather (see [repository](https://github.com/UKTailwind/PicoMite)).
   - New [wiki page](https://github.com/teuler/robotling2/wiki/Running-the-robot-with-MMBasic) about running the robot under MMBasic.
