@@ -10,6 +10,8 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2021-12-16
+  - Slighly updated version of board added
 * 2021-11-20
   - [MMBasic program explained (German)](https://github.com/teuler/robotling2/wiki/Kommentare-zum-MMBasic-Programm) added to Wiki.
 * 2021-11-07
