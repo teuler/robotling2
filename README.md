@@ -12,6 +12,7 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 * 2022-01-22
   - [Parts list](https://github.com/teuler/robotling2/wiki/Electronics,-PCB-and-parts#Electronics_Parts) added 
+  - Information about the distance sensors added
 * 2021-12-16
   - Slighly updated version of board added
 * 2021-11-20
