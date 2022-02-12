@@ -10,6 +10,11 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2022-02-12
+  - All `.stl` files adjusted to print orientation; `.stl` file for Pololu tof sensors added
+  - Wiki pages added: "[Mechanik](https://github.com/teuler/robotling2/wiki/Mechanik)", "[Aufbau und Hinweise zum Zusammenbau](https://github.com/teuler/robotling2/wiki/Aufbau-und-Hinweise-zum-Zusammenbau)", German version of "[Elektronik, Platine, und Teile](https://github.com/teuler/robotling2/wiki/Elektronik,-Platine,-und-Teile)", "[Erweiterungen & Modifikationen](https://github.com/teuler/robotling2/wiki/Erweiterungen-&-Modifikationen)", "[Sensoren](https://github.com/teuler/robotling2/wiki/Sensoren)"
+  - Cleaned up wiki pages for MicroPython
+  - Completed parts list
 * 2022-01-22
   - [Parts list](https://github.com/teuler/robotling2/wiki/Electronics,-PCB-and-parts#Electronics_Parts) added 
   - Information about the distance sensors added
