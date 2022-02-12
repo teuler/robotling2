@@ -1,5 +1,5 @@
 
-This folder contains the `.stl` files for all parts. The robot was desiged using [FreeCad](https://www.freecadweb.org/); the corresponding design files (different versions) are in the  `FreeCAD_files` subfolder.
+This folder contains the `.stl` files for all parts. The robot was desiged using [FreeCad](https://www.freecadweb.org/); the corresponding design files (different versions) are in the  `FreeCAD_files` subfolder. The subfolder `preliminary` contains not yet tested parts.
 
 ### Notes:
 - `bar.stl`, `bar_long.stl`, `bar_medium.stl`<br>
@@ -10,4 +10,4 @@ This folder contains the `.stl` files for all parts. The robot was desiged using
   This part is needed to attached an [Evo Mini](https://www.terabee.com/shop/lidar-tof-range-finders/teraranger-evo-mini/) ranging sensor from Terabee.
 - `sensor_adapter_tof_pololu.stl`<br>
   This part is needed to attach Pololu's time-of-flight distance sensors (for details, see [here](https://github.com/teuler/robotling2/wiki/Sensoren#time-of-flight-sensoren)).
-- `foot_left.stl`, `foot_right.stl` - feet to be attached to the legs (preliminary, not needed)
+
