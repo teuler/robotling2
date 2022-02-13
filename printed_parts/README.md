@@ -1,5 +1,9 @@
 
-This folder contains the `.stl` files for all parts. The robot was desiged using [FreeCad](https://www.freecadweb.org/); the corresponding design files (different versions) are in the  `FreeCAD_files` subfolder. The subfolder `preliminary` contains not yet tested parts.
+This folder contains the `.stl` files for all parts. The robot was desiged using [FreeCad](https://www.freecadweb.org/); the corresponding design files (different versions) are in the  `FreeCAD_files` subfolder. 
+
+The subfolder `preliminary` contains not yet tested parts.
+
+The subfolder `mods_c_otto` contains parts contributed by **Carsten Otto**.
 
 ### Notes:
 - `bar.stl`, `bar_long.stl`, `bar_medium.stl`<br>
