@@ -4,7 +4,7 @@
 # Global definitions
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-2022 Thomas Euler
 # 2021-03-03, v1.0
 # ----------------------------------------------------------------------------
 from micropython import const
@@ -19,13 +19,14 @@ STATE_NONE          = const(0)
 STATE_IDLE          = const(1)
 STATE_STOPPING      = const(2)
 STATE_WALKING       = const(3)
-STATE_TURNING       = const(4)
-STATE_POWERING_DOWN = const(5)
-STATE_OFF           = const(6)
+STATE_REVERSING     = const(4)
+STATE_TURNING       = const(5)
+STATE_POWERING_DOWN = const(6)
+STATE_OFF           = const(7)
 # ...
 STATE_STRS          = ["None", "Idle",
-                       "Stopping", "Walking", "Turning", "Powering down",
-                       "Off"]
+                       "Stopping", "Walking", "Backing up", "Turning",
+                       "Powering down", "Off"]
 # Commands
 CMD_NONE            = const(0)
 CMD_STOP            = const(1)

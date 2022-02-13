@@ -4,8 +4,9 @@
 # GUI at startup
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-2022 Thomas Euler
 # 2021-03-28, v1.0
+# 2022-02-12, v1.1
 # ----------------------------------------------------------------------------
 import time
 import gc
@@ -16,7 +17,7 @@ import rbl2_global as glb
 import rbl2_config as cfg
 
 # pylint: disable=bad-whitespace
-__version__    = "0.1.0.0"
+__version__    = "0.1.1.0"
 BACKLIGHT      = 0.8
 FONT_SIZE1     = const(2)
 FONT_SIZE2     = const(3)
@@ -183,6 +184,14 @@ class GUI(object):
     finally:
       _display.update()
       _display.remove_clip()
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  def show_distance_tof(self, dist):
+    """ Show distance info from 3-channel tof sensor array
+    """
+    print(dist)
+    # TODO
+
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def spin(self):

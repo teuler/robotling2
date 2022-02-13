@@ -5,15 +5,16 @@
 # (for rp2 micropython)
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-22 Thomas Euler
 # 2021-02-28, v1.0
+# 2022-01-03, v1.1, Nano RP2040 Connect added
 # ----------------------------------------------------------------------------
 import time
 from micropython import const
 from machine import Pin, PWM
 
 # pylint: disable=bad-whitespace
-__version__     = "0.1.0.0"
+__version__     = "0.1.1.0"
 
 PULL_UP         = const(0)
 PULL_DOWN       = const(1)
@@ -130,7 +131,7 @@ class Buzzer(object):
   """Buzzer."""
 
   def __init__(self, pin):
-    self._buzz = PWMOut(pin, freq=0)
+    self._buzz = PWMOut(pin)
     self._freq = 0
     self._mute = False
 
@@ -140,7 +141,7 @@ class Buzzer(object):
 
   @freq_Hz.setter
   def freq_Hz(self, value):
-    if value >= 0:
+    if value >= 10:
       self._buzz.freq_Hz = value
       self._freq = value
 

@@ -4,8 +4,9 @@
 # Gait control for robotling2
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-2022 Thomas Euler
 # 2021-03-03, v1.0
+# 2021-02-12, v1.1
 # ----------------------------------------------------------------------------
 import time
 import array
@@ -16,15 +17,15 @@ from robotling_lib.motors.servo import Servo
 from robotling_lib.motors.servo_manager import ServoManager
 
 # pylint: disable=bad-whitespace
-__version__  = "0.1.0.0"
+__version__  = "0.1.1.0"
 
 #                Servos,  Positions, Dur, Mode,           Next, Jump
-GAIT_SEQ     = [([2],     [ 10],     250, glb.STATE_WALKING,   1,   4),     # 0
-                ([0,1],   [ 20, 20], 400, glb.STATE_WALKING,   2,   None),  # 1
-                ([2],     [-10],     250, glb.STATE_WALKING,   3,   4),     # 2
-                ([0,1],   [-20,-20], 400, glb.STATE_WALKING,   0,   None),  # 3
-                ([0,1],   [  0,  0], 400, glb.STATE_STOPPING,  5,   5),     # 4
-                ([2],     [  0],     400, glb.STATE_STOPPING, -1,  None)]   # 5
+GAIT_SEQ     = [([2],     [ 10],     150, glb.STATE_WALKING,   1,  4),     # 0
+                ([0,1],   [ 20, 20], 300, glb.STATE_WALKING,   2,  None),  # 1
+                ([2],     [-10],     150, glb.STATE_WALKING,   3,  4),     # 2
+                ([0,1],   [-20,-20], 300, glb.STATE_WALKING,   0,  None),  # 3
+                ([0,1],   [  0,  0], 300, glb.STATE_STOPPING,  5,  5),     # 4
+                ([2],     [  0],     300, glb.STATE_STOPPING, -1,  None)]  # 5
 GS_SRV       = const(0)
 GS_POS       = const(1)
 GS_DUR       = const(2)
@@ -43,6 +44,7 @@ class Gait(object):
     self._iStep = 0
     self._vel = 1.
     self._dir = 0.
+    self._rev = False
     self._verbose = verbose
 
     # Configure servos and servo manager
@@ -83,10 +85,13 @@ class Gait(object):
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def walk(self):
     """ Start walking, defined by the properties `direction` (e.g. -1=left
-        turn, +1=right turn, 0=straight forward) and `velocity` (<0, slower,
+        turn, +1=right turn, 0=straight forward) and `velocity` (<1, slower,
         >1 faster)
     """
-    self._state = glb.STATE_WALKING if self._dir == 0 else glb.STATE_TURNING
+    if abs(self._dir) < 0.01:
+      self._state = glb.STATE_WALKING if not self._rev else glb.STATE_REVERSING
+    else:
+      self._state = glb.STATE_TURNING
     self._iStep = 0
     self.spin()
 
@@ -108,7 +113,9 @@ class Gait(object):
 
     iS = self._iStep
     dr = self._dir
-    if st in [glb.STATE_WALKING, glb.STATE_TURNING, glb.STATE_STOPPING]:
+    rv = self._rev
+    if st in [glb.STATE_WALKING, glb.STATE_REVERSING, glb.STATE_TURNING,
+              glb.STATE_STOPPING]:
       # Apply direction
       pos = array.array("f", GAIT_SEQ[iS][GS_POS])
       for j, id in enumerate(GAIT_SEQ[iS][GS_SRV]):
@@ -118,6 +125,9 @@ class Gait(object):
         elif dr > 0:
           if id == 1:
             pos[j] *= -abs(dr)
+        if abs(dr) < 0.01:
+          if rv and id in [0,1]:
+            pos[j] *= -1  
 
       # Execute move
       vel = int(GAIT_SEQ[iS][GS_DUR] *self._vel)
@@ -127,11 +137,12 @@ class Gait(object):
       # issued or not
       iN = GAIT_SEQ[iS][GS_NEXT]
       iJ = GAIT_SEQ[iS][GS_JUMP]
-      if st in [glb.STATE_WALKING, glb.STATE_TURNING]:
+      if st in [glb.STATE_WALKING, glb.STATE_REVERSING, glb.STATE_TURNING]:
         # Just continue walking ...
         self._iStep = iN
       elif st == glb.STATE_STOPPING:
-        if GAIT_SEQ[iS][GS_MODE] in [glb.STATE_WALKING, glb.STATE_TURNING]:
+        if GAIT_SEQ[iS][GS_MODE] in [glb.STATE_WALKING, glb.STATE_REVERSING,
+                                     glb.STATE_TURNING]:
           # Just received "stop"; jump to stopping sequence if available
           self._iStep = iJ if iJ is not None else iN
         else:
@@ -155,7 +166,7 @@ class Gait(object):
   @direction.setter
   def direction(self, value):
     self._dir = max(min(value, 1.0), -1.0)
-
+    
   @property
   def velocity(self):
     return self.vel
@@ -163,5 +174,14 @@ class Gait(object):
   @velocity.setter
   def velocity(self, vel):
     self._vel = max(vel, 0.1)
+    
+  @property
+  def reverse(self):
+    return self._rev
+
+  @reverse.setter
+  def reverse(self, value):
+    self._rev = bool(value)
+    
 
 # ----------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 # (for rp2 micropython)
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-22 Thomas Euler
 # 2021-02-28, v1.0
 # ----------------------------------------------------------------------------
 import time
@@ -32,7 +32,7 @@ class AnalogIn(object):
 
   @property
   def value(self):
-    return self._pin.read()
+    return self._pin.read_u16()
 
   @property
   def max_adc(self):

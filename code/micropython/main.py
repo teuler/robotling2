@@ -4,15 +4,22 @@
 # Main program
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-2022 Thomas Euler
 # 2021-03-28, v1.0
+# 2022-02-12, v1.1
 # ----------------------------------------------------------------------------
 import gc
 import time
+import random
 import rbl2_robot
 import rbl2_global as glb
 import rbl2_config as cfg
 from micropython import const
+
+# pylint: disable=bad-whitespace
+DIST_TOF_OBJ    = const(35)   # object if smaller than this distance
+DIST_TOF_CLIFF  = const(150)  # cliff if larger than this distance
+# pylint: enable=bad-whitespace
 
 # ----------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -20,69 +27,104 @@ if __name__ == "__main__":
   Robot = rbl2_robot.Robot(core=cfg.HW_CORE)
   Robot.autoupdate_gui = True
   only_sensors = False
+  is_running = True
 
-  print("Press `A` for sensors only ...")
-  trials = 80
-  while trials > 0:
+  # Allow to check sensors w/o servos on user input
+  glb.toLog("Press `A` to start robot ...")
+  while True:
     if Robot.is_pressed_A:
+      break  
+    '''
+    if Robot.is_pressed_B:
       only_sensors = True
       break
-    trials -= 1
+    '''  
     time.sleep_ms(25)
+  '''
   if only_sensors:
     Robot.show_message("sensors-only")
   Robot.no_servos(only_sensors)
-
+  '''
+  
+  # Main loop
+  glb.toLog("Starting main loop (press `X` to shutdown)")
   try:
-    while not Robot.state == glb.STATE_OFF:
+    while not Robot.state == glb.STATE_OFF and is_running:
 
-      dLLo, dLHi, dRLo, dRHi = Robot.distances_mm
-
-      if not only_sensors:
+      # Get distance sensor readings depending on sensor type and calculate
+      # if obstacles and/or cliffs are detected ... 
+      if Robot.distance_sensor_type == cfg.STY_EVOMINI:
+        dLLo, dLHi, dRLo, dRHi = Robot.distances_mm
         objL = (dLLo > 0 and dLLo < 65) or (dLHi > 0 and dLHi < 80)
         objR = (dRLo > 0 and dRLo < 65) or (dRHi > 0 and dRHi < 80)
+        objC = objL and objR
         clfL = dLLo > 120
         clfR = dRLo > 120
-        free = not objL and not objR and not clfL and not clfR
+        free = not objL and not objR and not objC and not clfL and not clfR
+        
+      elif Robot.distance_sensor_type == cfg.STY_TOF:
+        dL, dC, dR = Robot.distances_mm
+        #print(dL, dC, dR)
+        objL = (dL > 0 and dL < DIST_TOF_OBJ)
+        objC = (dC > 0 and dC < DIST_TOF_OBJ)
+        objR = (dR > 0 and dR < DIST_TOF_OBJ)
+        clfL = dL > DIST_TOF_CLIFF
+        clfR = dR > DIST_TOF_CLIFF
+        free = not objL and not objR and not objC and not clfL and not clfR
 
-        if free:
-          if Robot.state is not glb.STATE_WALKING:
-            Robot.move_forward()
-            Robot.show_message("-")
-        else:
-          Robot.stop()
-          while Robot.state is not glb.STATE_IDLE: Robot.sleep_ms(25)
+      if only_sensors:
+        # If only testing sensors, skip rest of main loop  
+        continue   
+          
+      # Act on detected objects and/or cliffs    
+      if free:
+        if Robot.state is not glb.STATE_WALKING:
+          Robot.move_forward()
+          Robot.show_message("-")
+      else:
+        Robot.stop()
+        while Robot.state is not glb.STATE_IDLE:
+          Robot.sleep_ms(25)
 
-          if clfL or clfR:
-            if clfL and not clfR:
-              Robot.turn(+1)
-              Robot.show_message("Cliff_L_")
-            elif not clfL and clfR:
-              Robot.turn(-1)
-              Robot.show_message("Cliff__R")
-            elif clfL and clfR:
-              Robot.turn(-1)
-              Robot.show_message("Cliff_LR")
+        if clfL or clfR:
+          if clfL and not clfR:
+            Robot.turn(+1)
+            Robot.show_message("Cliff_L__")
+          elif not clfL and clfR:
+            Robot.turn(-1)
+            Robot.show_message("Cliff___R")
+          elif clfL and clfR:
+            Robot.move_backward()
             Robot.sleep_ms(4000)
+            Robot.turn(1 if random.random() > 0.5 else -1)
+            Robot.show_message("Cliff_L_R")
+          Robot.sleep_ms(4000)
 
-          elif objL or objR:
-            if objL and not objR:
-              Robot.turn(+1)
-              Robot.show_message("Objct_L_")
-            elif not objL and objR:
-              Robot.turn(-1)
-              Robot.show_message("Objct__R")
-            elif objL and objR:
-              Robot.turn(-1)
-              Robot.show_message("Objct_LR")
+        elif objL or objC or objR :
+          if objL and not objR:
+            Robot.turn(+1)
+            Robot.show_message("Objct_L__")
+          elif not objL and objR:
+            Robot.turn(-1)
+            Robot.show_message("Objct___R")
+          elif objC:
+            Robot.move_backward()
             Robot.sleep_ms(2000)
+            Robot.turn(1 if random.random() > 0.5 else -1)
+            Robot.show_message("Objct__C_")
+          Robot.sleep_ms(2000)
 
       # Sleep for a while and, if running only on one core, make sure that
       # the robot's hardware is updated
       Robot.sleep_ms(50)
+      
+      # Check if user pressed the X button
+      is_running = not Robot.exit_requested
 
   except KeyboardInterrupt:
-    # Clean up
-    Robot.deinit()
+    pass
+
+  # Clean up
+  Robot.deinit()
 
 # ----------------------------------------------------------------------------

@@ -4,17 +4,18 @@
 # Configuration and global definitions
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-2022 Thomas Euler
 # 2021-03-03, v1.0
 # 2021-04-05, v1.1 - D21 instead of D9, because the latter shows irrative
 #                    behaviour when used together with picodisplay
+# 2022-02-12, v1.2 - More sensors allowed, constants for sensor port pins
 # ----------------------------------------------------------------------------
 from micropython import const
 from robotling_lib.platform.rp2 import board_rp2 as board
 
 # pylint: disable=bad-whitespace
 # Firmware info
-RBL2_VERSION   = 1
+RBL2_VERSION   = 1.2
 RBL2_INFO      = "Robotling2"
 
 # Control how hardware is kept updated
@@ -22,6 +23,17 @@ HW_CORE        = const(0)   # 1=hardware update runs on second core
 APPROX_SPIN_MS = const(5)   # core==0, approx. duration of hardware update
 MIN_UPDATE_MS  = const(20)  # core==0, minimal time between hardware updates
 PULSE_STEPS    = const(10)  # Number of steps for Pixel/RGB pulsing
+
+# Sensor port pins (idenfiers on PCB)
+SPO_D0         = board.D3
+SPO_AI2        = board.D28
+SPO_AI0        = board.D26
+SPO_AI1        = board.D27
+SPO_D1         = board.D22
+SPO_RX         = board.D5
+SPO_SC         = board.D1
+SPO_TX         = board.D4
+SPO_SD         = board.D0
 
 # Servo-related definitions
 SRV_RANGE_US   = [(1010, 1810), (1100, 1900), (1191, 1625)]
@@ -37,9 +49,22 @@ COL_TXT_WARN   = const(248)
 COL_BKG_LO     = const(0)
 
 # Devices
-DEVICES        = ["evo_mini"]
+DEVICES        = ["tof_pwm"]
 
-# TeraRanger EvoMini
+# Sensor types
+STY_NONE       = const(0)
+STY_TOF        = const(1)
+STY_EVOMINI    = const(2)
+
+# Pololu tof distance sensor array w/ PWM output
+TOFPWM_PINS    = [SPO_D0, SPO_RX, SPO_TX]
+TOFPWM_MIN_MM  = const(10)
+TOFPWM_MAX_MM  = const(500)
+TOFPWM_LEFT    = const(0)
+TOFPWM_CENTER  = const(1)
+TOFPWM_RIGHT   = const(2)
+
+# TeraRanger EvoMini (for "evo_mini" in `DEVICES`)
 EVOMINI_UART   = const(1)
 EVOMINI_TX     = board.D4
 EVOMINI_RX     = board.D5

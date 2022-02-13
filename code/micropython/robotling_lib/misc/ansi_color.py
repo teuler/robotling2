@@ -19,6 +19,7 @@ BLUE_BKG        = "\x1b[44m"
 LILAC           = "\x1b[95m"
 LILAC_BKG       = "\x1b[45m"
 YELLOW          = "\x1b[33m"
+LIGHT_YELLOW    = "\x1b[93m"
 YELLOW_BKG      = "\x1b[43m"
 
 # ----------------------------------------------------------------------------

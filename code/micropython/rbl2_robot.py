@@ -4,8 +4,9 @@
 # Representation of the robot
 #
 # The MIT License (MIT)
-# Copyright (c) 2021 Thomas Euler
+# Copyright (c) 2021-2022 Thomas Euler
 # 2021-04-03, v1.0
+# 2022-02-12, v1.1
 # ----------------------------------------------------------------------------
 import time
 import array
@@ -17,7 +18,7 @@ import rbl2_gui
 from robotling_lib.platform.rp2 import board_rp2 as board
 
 # pylint: disable=bad-whitespace
-__version__  = "0.1.0.0"
+__version__  = "0.1.1.0"
 
 # Global variables to communicate with task on core 1
 # (Do not access other than via the `RobotBase` instance!!)
@@ -27,12 +28,14 @@ g_cmd        = glb.CMD_NONE
 g_counter    = 0
 g_gui        = rbl2_gui.GUI()
 g_dist_evo   = None
+g_dist_tof   = None
+g_dist_type  = cfg.STY_NONE
 g_gait       = gait.Gait()
 g_move_dir   = 0.
 g_move_vel   = 2
+g_move_rev   = False
 g_do_exit    = False
 g_led        = Pin(board.D11, Pin.OUT)
-# ...
 # pylint: enable=bad-whitespace
 
 # ----------------------------------------------------------------------------
@@ -41,9 +44,10 @@ class Robot(object):
 
   def __init__(self, core=1, use_gui=True, verbose=False):
     global g_state
-    global g_dist_evo
+    global g_dist_evo, g_dist_tof, g_dist_type
 
     # Initializing ...
+    glb.toLog("Initializing ...")
     g_state = glb.STATE_NONE
     self._verbose = verbose
     self._core = core
@@ -51,6 +55,7 @@ class Robot(object):
     self._spin_t_last_ms = 0
     self._do_autoupdate_gui = False
     self._no_servos = False
+    self._user_abort = False
 
     # Initializing some hardware
     self._pinVBUSPresent = Pin(board.VBUS, Pin.IN)
@@ -66,19 +71,23 @@ class Robot(object):
 
     # Initialize devices
     if "evo_mini" in cfg.DEVICES:
+      # 4-channel TeraRanger Evo Mini from Terabee
       from robotling_lib.sensors.teraranger_evomini import TeraRangerEvoMini
       g_dist_evo = TeraRangerEvoMini(
           cfg.EVOMINI_UART,
           tx=Pin(cfg.EVOMINI_TX), rx=Pin(cfg.EVOMINI_RX)
         )
       time.sleep_ms(1000)
-      '''
-      self._evo_inf_neg_pos = [
-          TeraRangerEvoMini.TERA_DIST_NEG_INF,
-          TeraRangerEvoMini.TERA_DIST_POS_INF
-        ]
-      '''
-
+      g_dist_type = cfg.STY_EVOMINI
+      
+    if "tof_pwm" in cfg.DEVICES:
+      # 3x 1-channel Time-of-flight sensors w/ PWM output from Pololu 
+      from robotling_lib.sensors.pololu_tof_ranging import PololuTOFRangingSensor
+      g_dist_tof = []
+      for p in cfg.TOFPWM_PINS:
+        g_dist_tof.append(PololuTOFRangingSensor(p))
+      g_dist_type = cfg.STY_TOF
+      
     # Depending on `core`, the thread that updates the hardware either runs
     # on the second core (`core` == 1) or on the same core as the main program
     # (`core` == 0). In the latter case, the classes `sleep_ms()` function
@@ -102,16 +111,21 @@ class Robot(object):
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def deinit(self):
     global g_state, g_gui
+    
     if g_state is not glb.STATE_OFF:
+      glb.toLog("Powering down ...")  
       self.power_down()
-      counter = 0
       while g_state is not glb.STATE_OFF:
-        assert counter > 1000, "Locked in `RobotBase.deinit`"
-        counter += 1
-        self.sleep_ms(50)
+        self.sleep_ms(25)
+        
+    glb.toLog("Turning servos off ...")      
+    self.turn_servos_off()
     if g_gui:
+      glb.toLog("Clearing display and LED ...")      
       g_gui.deinit()
       g_gui.LED.RGB = (60,0,0)
+      
+    glb.toLog("Done.")        
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   @property
@@ -127,6 +141,10 @@ class Robot(object):
     return g_move_dir
 
   @property
+  def distance_sensor_type(self):
+    return g_dist_type
+
+  @property
   def distances_mm(self):
     """ Returns the distances (in [mm]) as an array. The lengths of the array
         depends on the sensor: e.g. the TeraRanger Evo mini reports 4 values.
@@ -140,8 +158,15 @@ class Robot(object):
           _d[i] = cfg.EVOMINI_MIN_MM
         elif _d[i] == g_dist_evo.TERA_DIST_INVALID:
           _d[i] = -1
+      self._last_dist = _d    
       return _d
-    else:
+    elif g_dist_tof:
+      _d = array.array("i", [0]*len(g_dist_tof))
+      for i, tof in enumerate(g_dist_tof):
+        _d[i] = int(tof.range_cm *10)
+      self._last_dist = _d
+      return _d  
+    else:      
       return []
 
   @property
@@ -157,6 +182,13 @@ class Robot(object):
     """
     return self._pinPower_V.read_u16() /65536 *3
 
+  @property
+  def exit_requested(self):
+    """ Returns True if the `X` button was pressed during `sleep_ms()`
+    """
+    return self._user_abort  
+
+
   # GUI-related properties
   @property
   def autoupdate_gui(self):
@@ -171,6 +203,14 @@ class Robot(object):
   def is_pressed_A(self):
     return g_gui.display.is_pressed(g_gui.display.BUTTON_A) if g_gui else False
 
+  @property
+  def is_pressed_B(self):
+    return g_gui.display.is_pressed(g_gui.display.BUTTON_B) if g_gui else False
+
+  @property
+  def is_pressed_X(self):
+    return g_gui.display.is_pressed(g_gui.display.BUTTON_X) if g_gui else False
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def update_display(self):
     """ If display is connected, show important status information there
@@ -183,13 +223,9 @@ class Robot(object):
           vbus, pw_V
         )
       if g_dist_evo:
-        g_gui.show_distance_evo(self.distances_mm)
-        '''
-        g_gui.show_distance_evo(
-            g_dist_evo.distances, g_dist_evo.last_valid_ms,
-            self._evo_inf_neg_pos
-          )
-        '''
+        g_gui.show_distance_evo(self._last_dist)
+      if g_dist_tof:
+        g_gui.show_distance_tof(self._last_dist)
 
   def show_message(self, msg):
     """ Show a message on the display
@@ -198,15 +234,19 @@ class Robot(object):
       g_gui.show_msg(msg)
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  def move_forward(self, wait_for_idle=False):
+  def move_forward(self, wait_for_idle=False, reverse=False):
     """ Move straight forward using current gait and velocity.
         If `wait_for_idle` is True, then trigger action only when idle.
     """
-    global g_cmd, g_move_dir
+    global g_cmd, g_move_dir, g_move_rev
     if not wait_for_idle or g_state_gait == glb.STATE_IDLE:
       g_move_dir = 0.
+      g_move_rev = reverse
       if not self._no_servos:
         g_cmd = glb.CMD_MOVE
+        
+  def move_backward(self, wait_for_idle=False):
+    self.move_forward(wait_for_idle, True)  
 
   def turn(self, dir, wait_for_idle=False):
     """ Turn using current gait and velocity; making with `dir` < 0 a left and
@@ -237,7 +277,6 @@ class Robot(object):
     """ Power down and end task
     """
     global g_cmd, g_move_dir
-    glb.toLog("Request hardware thread power down ...")
     g_move_dir = 0.
     g_cmd = glb.CMD_POWER_DOWN
 
@@ -269,6 +308,9 @@ class Robot(object):
         self._spin_callback()
         if self._do_autoupdate_gui:
           self.update_display()
+        if self.is_pressed_X:
+          self._user_abort = True  
+          return  
         self._spin_t_last_ms = time.ticks_ms()
 
         # Check if sleep time is left ...
@@ -283,6 +325,9 @@ class Robot(object):
           self._spin_callback()
           if self._do_autoupdate_gui:
             self.update_display()
+          if self.is_pressed_X:
+            self._user_abort = True  
+            return  
 
         # Remember time of last update
         self._spin_t_last_ms = time.ticks_ms()
@@ -316,19 +361,25 @@ class Robot(object):
     """
     global g_state_gait, g_state, g_counter
     global g_cmd, g_do_exit
+    global g_move_dir, g_move_rev
+    global g_dist_evo, g_led
 
     if g_state == glb.STATE_OFF:
       return
     if g_state is not glb.STATE_POWERING_DOWN:
       g_led.value(1)
 
-      # Handle new command, if any ...
+      # Handle new command, if any ... 
       if g_cmd is not glb.CMD_NONE:
 
         if g_cmd == glb.CMD_MOVE:
           g_gait.direction = g_move_dir
+          g_gait.reverse = g_move_rev
           g_gait.walk()
-          g_state = glb.STATE_WALKING if g_move_dir == 0 else glb.STATE_TURNING
+          if abs(g_move_dir) < 0.01:
+            g_state = glb.STATE_WALKING if not g_move_rev else glb.STATE_REVERSING
+          else:
+            g_state = glb.STATE_TURNING
 
         if g_cmd in [glb.CMD_STOP, glb.CMD_POWER_DOWN]:
           # Stop or power down ...
@@ -370,6 +421,8 @@ class Robot(object):
     """
     global g_state_gait, g_state, g_counter
     global g_cmd, g_do_exit
+    global g_move_dir, g_move_rev
+    global g_dist_evo, g_led
 
     # Loop
     g_do_exit = False
@@ -386,21 +439,19 @@ class Robot(object):
 
             if g_cmd == glb.CMD_MOVE:
               g_gait.direction = g_move_dir
+              g_gait.reverse = g_move_rev
               g_gait.walk()
-              if g_move_dir == 0:
-                g_state = glb.STATE_WALKING
+              if abs(g_move_dir) < 0.01:
+                g_state = glb.STATE_WALKING if not g_move_rev else glb.STATE_REVERSING
               else:
                 g_state = glb.STATE_TURNING
-
-            if g_cmd == glb.CMD_STOP:
+                
+            if g_cmd in [glb.CMD_STOP, glb.CMD_POWER_DOWN]:
+              # Stop or power down ...
               g_gait.stop()
               g_state = glb.STATE_STOPPING
-
-            if g_cmd == glb.CMD_POWER_DOWN:
-              # Stop and power down ...
-              g_gait.stop()
-              g_do_exit = True
-
+              g_do_exit = g_cmd == glb.CMD_POWER_DOWN
+                
             g_cmd = glb.CMD_NONE
 
           # Wait for transitions to update state accordingly ...
