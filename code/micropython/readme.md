@@ -1,3 +1,5 @@
+> Note: _More drivers are available from [robotling_lib](https://github.com/teuler/robotling_lib)._
+
 ### TODOs
 - Show time-of-flight sensor readings on the display
 - Add splash screen
