@@ -1,3 +1,5 @@
+> Note: _The folder `robotling_lib` contains only a minimum of drivers; for more drivers, see [robotling_lib](https://github.com/teuler/robotling_lib)._
+
 ### TODOs
 - Show time-of-flight sensor readings on the display
 - Add splash screen
