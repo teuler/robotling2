@@ -6,6 +6,7 @@
 # Copyright (c) 2021-2022 Thomas Euler
 # 2021-02-28, v1
 # 2022-02-12, v1.1
+# 2022-03-26, v1.2, now also including Pimoroni's Pico Lipo
 # ----------------------------------------------------------------------------
 from micropython import const
 
@@ -69,15 +70,10 @@ BAT  = const(29)  # ADC3 measuring VSYS/3
 # Special functions
 def voltage_V():
   from machine import ADC
-  return ADC(3).read_u16() /65535 *3
-
-def core_temperature_deg():
-  from machine import ADC, CORE_TEMP
-  val = ADC(CORE_TEMP).read_u16()
-  return 27 -(val *3.3 /65535 -0.706) /0.001721
+  return ADC(BAT).read_u16() *3 *3.3 /65535
 
 def is_vbus_present():
   from machine import Pin
-  return Pin(board.VBUS, Pin.IN).value()
+  return Pin(VBUS, Pin.IN).value()
 
 # ----------------------------------------------------------------------------

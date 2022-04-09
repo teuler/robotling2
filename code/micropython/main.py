@@ -7,6 +7,7 @@
 # Copyright (c) 2021-2022 Thomas Euler
 # 2021-03-28, v1.0
 # 2022-02-12, v1.1
+# 2022-04-08, v1.2, a few improvements and fixes
 # ----------------------------------------------------------------------------
 import gc
 import time
@@ -24,27 +25,19 @@ DIST_TOF_CLIFF  = const(150)  # cliff if larger than this distance
 # ----------------------------------------------------------------------------
 if __name__ == "__main__":
   # Initialize robot
-  Robot = rbl2_robot.Robot(core=cfg.HW_CORE)
+  is_gui = "display" in cfg.DEVICES
+  Robot = rbl2_robot.Robot(core=cfg.HW_CORE, use_gui=is_gui)
   Robot.autoupdate_gui = True
   only_sensors = False
   is_running = True
 
-  # Allow to check sensors w/o servos on user input
-  glb.toLog("Press `A` to start robot ...")
-  while True:
-    if Robot.is_pressed_A:
-      break  
-    '''
-    if Robot.is_pressed_B:
-      only_sensors = True
-      break
-    '''  
-    time.sleep_ms(25)
-  '''
-  if only_sensors:
-    Robot.show_message("sensors-only")
-  Robot.no_servos(only_sensors)
-  '''
+  # Wait for user to start robot, if display with button available
+  if is_gui and cfg.DISPLAY_TYPE in [cfg.PIMORONI_PICO_DISPLAY]:
+    glb.toLog("Press `A` to start robot ...")
+    while True:
+      if Robot.is_pressed_A:
+        break  
+      time.sleep_ms(25)
   
   # Main loop
   glb.toLog("Starting main loop (press `X` to shutdown)")
@@ -95,10 +88,10 @@ if __name__ == "__main__":
             Robot.show_message("Cliff___R")
           elif clfL and clfR:
             Robot.move_backward()
-            Robot.sleep_ms(4000)
+            Robot.sleep_ms(2000)
             Robot.turn(1 if random.random() > 0.5 else -1)
             Robot.show_message("Cliff_L_R")
-          Robot.sleep_ms(4000)
+          Robot.sleep_ms(2000)
 
         elif objL or objC or objR :
           if objL and not objR:
@@ -109,14 +102,14 @@ if __name__ == "__main__":
             Robot.show_message("Objct___R")
           elif objC:
             Robot.move_backward()
-            Robot.sleep_ms(2000)
+            Robot.sleep_ms(1000)
             Robot.turn(1 if random.random() > 0.5 else -1)
             Robot.show_message("Objct__C_")
-          Robot.sleep_ms(2000)
+          Robot.sleep_ms(1000)
 
       # Sleep for a while and, if running only on one core, make sure that
       # the robot's hardware is updated
-      Robot.sleep_ms(50)
+      Robot.sleep_ms(25)
       
       # Check if user pressed the X button
       is_running = not Robot.exit_requested

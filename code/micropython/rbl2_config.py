@@ -9,13 +9,14 @@
 # 2021-04-05, v1.1 - D21 instead of D9, because the latter shows irrative
 #                    behaviour when used together with picodisplay
 # 2022-02-12, v1.2 - More sensors allowed, constants for sensor port pins
+# 2022-04-08, v1.3 - small fixes for MicroPython 1.18
 # ----------------------------------------------------------------------------
 from micropython import const
 from robotling_lib.platform.rp2 import board_rp2 as board
 
 # pylint: disable=bad-whitespace
 # Firmware info
-RBL2_VERSION   = 1.2
+RBL2_VERSION   = 1.3
 RBL2_INFO      = "Robotling2"
 
 # Control how hardware is kept updated
@@ -36,7 +37,11 @@ SPO_TX         = board.D4
 SPO_SD         = board.D0
 
 # Servo-related definitions
+'''
 SRV_RANGE_US   = [(1010, 1810), (1100, 1900), (1191, 1625)]
+SRV_RANGE_DEG  = [(-40, 40), (-40, 40), (-20, 20)]
+'''
+SRV_RANGE_US   = [(1110, 1810), (1100, 1800), (1291, 1565)]
 SRV_RANGE_DEG  = [(-40, 40), (-40, 40), (-20, 20)]
 SRV_ID         = bytearray([0,1,2])
 SRV_PIN        = bytearray([board.D21, board.D10, board.D2])
@@ -48,8 +53,12 @@ COL_TXT_OTHER  = const(14595)
 COL_TXT_WARN   = const(248)
 COL_BKG_LO     = const(0)
 
+PIMORONI_PICO_DISPLAY = const(1)
+
 # Devices
-DEVICES        = ["tof_pwm"]
+# Value(s): "tof_pwm", "display"
+DEVICES        = ["tof_pwm", "display"] 
+DISPLAY_TYPE   = PIMORONI_PICO_DISPLAY
 
 # Sensor types
 STY_NONE       = const(0)
@@ -59,7 +68,7 @@ STY_EVOMINI    = const(2)
 # Pololu tof distance sensor array w/ PWM output
 TOFPWM_PINS    = [SPO_D0, SPO_RX, SPO_TX]
 TOFPWM_MIN_MM  = const(10)
-TOFPWM_MAX_MM  = const(500)
+TOFPWM_MAX_MM  = const(200)
 TOFPWM_LEFT    = const(0)
 TOFPWM_CENTER  = const(1)
 TOFPWM_RIGHT   = const(2)

@@ -3,7 +3,7 @@
 # Simplified servo interface class(es)
 #
 # The MIT License (MIT)
-# Copyright (c) 2018-2021 Thomas Euler
+# Copyright (c) 2018-2022 Thomas Euler
 # 2018-10-09, v1
 # 2018-11-25, v1.1, now uses dio_*.py to access machine
 # 2018-12-23, v1.2, added `verbose` to print timing information to help
@@ -21,7 +21,7 @@ import robotling_lib.misc.ansi_color as ansi
 
 from robotling_lib.platform.platform import platform as pf
 if pf.languageID == pf.LNG_MICROPYTHON:
-  if pf.ID == pf.ENV_MPY_RP2:
+  if pf.isRP2:
     from robotling_lib.platform.rp2 import dio
   else:
     import robotling_lib.platform.esp32.dio as dio

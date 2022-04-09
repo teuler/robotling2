@@ -7,6 +7,7 @@
 # Copyright (c) 2021-2022 Thomas Euler
 # 2021-04-03, v1.0
 # 2022-02-12, v1.1
+# 2022-04-08, v1.2, small fixes for MicroPython 1.18
 # ----------------------------------------------------------------------------
 import time
 import array
@@ -18,7 +19,7 @@ import rbl2_gui
 from robotling_lib.platform.rp2 import board_rp2 as board
 
 # pylint: disable=bad-whitespace
-__version__  = "0.1.1.0"
+__version__  = "0.1.2.0"
 
 # Global variables to communicate with task on core 1
 # (Do not access other than via the `RobotBase` instance!!)
@@ -26,11 +27,11 @@ g_state_gait = glb.STATE_NONE
 g_state      = glb.STATE_NONE
 g_cmd        = glb.CMD_NONE
 g_counter    = 0
-g_gui        = rbl2_gui.GUI()
+g_gui        = None
 g_dist_evo   = None
 g_dist_tof   = None
 g_dist_type  = cfg.STY_NONE
-g_gait       = gait.Gait()
+g_gait       = None
 g_move_dir   = 0.
 g_move_vel   = 2
 g_move_rev   = False
@@ -43,7 +44,7 @@ class Robot(object):
   """Robot representation"""
 
   def __init__(self, core=1, use_gui=True, verbose=False):
-    global g_state
+    global g_state, g_gui, g_gait
     global g_dist_evo, g_dist_tof, g_dist_type
 
     # Initializing ...
@@ -61,13 +62,18 @@ class Robot(object):
     self._pinVBUSPresent = Pin(board.VBUS, Pin.IN)
     self._pinPower_V = ADC(Pin(board.BAT))
 
-    # Initialize picodisplay, if any
-    if g_gui:
+    # Initialize display, if any
+    if "display" in cfg.DEVICES:
+      g_gui = rbl2_gui.GUI()
       g_gui.clear()
       g_gui.LED.startPulse(150)
       g_gui.on(True)
       g_gui.show_version()
       g_gui.show_general_info("n/a")
+      
+    # Initialize servos/gait
+    # (Has to happen after initializing (Pimoroni) display to re-claim pins)
+    g_gait = gait.Gait()
 
     # Initialize devices
     if "evo_mini" in cfg.DEVICES:
@@ -85,7 +91,7 @@ class Robot(object):
       from robotling_lib.sensors.pololu_tof_ranging import PololuTOFRangingSensor
       g_dist_tof = []
       for p in cfg.TOFPWM_PINS:
-        g_dist_tof.append(PololuTOFRangingSensor(p))
+        g_dist_tof.append(PololuTOFRangingSensor(p, use_irq=False))
       g_dist_type = cfg.STY_TOF
       
     # Depending on `core`, the thread that updates the hardware either runs
@@ -111,6 +117,11 @@ class Robot(object):
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def deinit(self):
     global g_state, g_gui
+    
+    glb.toLog("Deinit sensors ...")          
+    if "tof_pwm" in cfg.DEVICES:
+      for sens in g_dist_tof:
+        sens.deinit()
     
     if g_state is not glb.STATE_OFF:
       glb.toLog("Powering down ...")  
@@ -180,7 +191,7 @@ class Robot(object):
     """ Returns the input voltage that powers the microcontroller
         TODO: Fix reported voltage (unclear why not correct)
     """
-    return self._pinPower_V.read_u16() /65536 *3
+    return self._pinPower_V.read_u16() *3 *3.3 /65535
 
   @property
   def exit_requested(self):
@@ -197,14 +208,14 @@ class Robot(object):
     return self._do_autoupdate_gui
   @autoupdate_gui.setter
   def autoupdate_gui(self, val :bool):
-    self._do_autoupdate_gui = val
+    self._do_autoupdate_gui = val if g_gui else False
 
   @property
   def is_pressed_A(self):
     return g_gui.display.is_pressed(g_gui.display.BUTTON_A) if g_gui else False
 
   @property
-  def is_pressed_B(self):
+  def is_pressed_B(self): 
     return g_gui.display.is_pressed(g_gui.display.BUTTON_B) if g_gui else False
 
   @property
@@ -362,7 +373,7 @@ class Robot(object):
     global g_state_gait, g_state, g_counter
     global g_cmd, g_do_exit
     global g_move_dir, g_move_rev
-    global g_dist_evo, g_led
+    global g_dist_evo, g_led, g_gui
 
     if g_state == glb.STATE_OFF:
       return
@@ -400,7 +411,8 @@ class Robot(object):
       g_state_gait = g_gait.state
       if g_dist_evo:
         g_dist_evo.update(raw=True)
-      g_gui.spin()
+      if g_gui:
+        g_gui.spin()
       g_counter += 1
       g_led.value(0)
 
@@ -422,7 +434,7 @@ class Robot(object):
     global g_state_gait, g_state, g_counter
     global g_cmd, g_do_exit
     global g_move_dir, g_move_rev
-    global g_dist_evo, g_led
+    global g_dist_evo, g_led, g_gui
 
     # Loop
     g_do_exit = False
@@ -465,7 +477,8 @@ class Robot(object):
           g_state_gait = g_gait.state
           if g_dist_evo:
             g_dist_evo.update(raw=False)
-          g_gui.spin()
+          if g_gui:  
+            g_gui.spin()
           g_counter += 1
           g_led.value(0)
 
