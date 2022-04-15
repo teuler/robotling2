@@ -66,6 +66,8 @@ STY_TOF        = const(1)
 STY_EVOMINI    = const(2)
 
 # Pololu tof distance sensor array w/ PWM output
+TOFPWM_USE_PIO = True
+TOFPWM_PIOS    = [0, 1, 2]
 TOFPWM_PINS    = [SPO_D0, SPO_RX, SPO_TX]
 TOFPWM_MIN_MM  = const(10)
 TOFPWM_MAX_MM  = const(200)

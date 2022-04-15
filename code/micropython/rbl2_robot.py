@@ -17,6 +17,7 @@ import rbl2_global as glb
 import rbl2_gait as gait
 import rbl2_gui
 from robotling_lib.platform.rp2 import board_rp2 as board
+from robotling_lib.misc.helpers import timed_function
 
 # pylint: disable=bad-whitespace
 __version__  = "0.1.2.0"
@@ -43,7 +44,7 @@ g_led        = Pin(board.D11, Pin.OUT)
 class Robot(object):
   """Robot representation"""
 
-  def __init__(self, core=1, use_gui=True, verbose=False):
+  def __init__(self, core=1, use_gui=True, verbose=False, no_servos=False):
     global g_state, g_gui, g_gait
     global g_dist_evo, g_dist_tof, g_dist_type
 
@@ -87,12 +88,17 @@ class Robot(object):
       g_dist_type = cfg.STY_EVOMINI
       
     if "tof_pwm" in cfg.DEVICES:
-      # 3x 1-channel Time-of-flight sensors w/ PWM output from Pololu 
-      from robotling_lib.sensors.pololu_tof_ranging import PololuTOFRangingSensor
-      g_dist_tof = []
-      for p in cfg.TOFPWM_PINS:
-        g_dist_tof.append(PololuTOFRangingSensor(p, use_irq=False))
+      # 3x 1-channel Time-of-flight sensors w/ PWM output from Pololu
       g_dist_type = cfg.STY_TOF
+      g_dist_tof = []
+      if cfg.TOFPWM_USE_PIO:
+        from robotling_lib.sensors.pololu_tof_ranging_pio import PololuTOFRangingSensor
+        for i, p in enumerate(cfg.TOFPWM_PINS):
+          g_dist_tof.append(PololuTOFRangingSensor(p, cfg.TOFPWM_PIOS[i]))
+      else:    
+        from robotling_lib.sensors.pololu_tof_ranging import PololuTOFRangingSensor
+        for p in cfg.TOFPWM_PINS:
+          g_dist_tof.append(PololuTOFRangingSensor(p))
       
     # Depending on `core`, the thread that updates the hardware either runs
     # on the second core (`core` == 1) or on the same core as the main program
@@ -155,6 +161,7 @@ class Robot(object):
   def distance_sensor_type(self):
     return g_dist_type
 
+  #@timed_function
   @property
   def distances_mm(self):
     """ Returns the distances (in [mm]) as an array. The lengths of the array
