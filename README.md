@@ -10,6 +10,12 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2022-04-08
+  - [MicroPython demo code](https://github.com/teuler/robotling2/tree/main/code/micropython) updated:
+     - Fixed small compatibility issues with MicroPython v1.18
+     - Display distance measurements also for Pololu ToF sensors   
+     - Add `"display"` as a "device" to the configuration to allow the robot to operate also w/o a PicoDisplay and to prepare the use of other types of displays.
+     - [Servo calibration program](https://github.com/teuler/robotling2/blob/main/code/micropython/calibrate_servos.py) added. For instructions, see [here](https://github.com/teuler/robotling2/wiki/Demo#kalibrierung-der-beinstellung).
 * 2022-02-12
   - New version of [MicroPython demo code](https://github.com/teuler/robotling2/tree/main/code/micropython). Changes:
      - More consistent with MMBasic demo
