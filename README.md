@@ -10,6 +10,8 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2022-04-15
+  - New version of the [driver](https://github.com/teuler/robotling2/blob/main/code/micropython/robotling_lib/sensors/pololu_tof_ranging_pio.py) for Pololu time-of-flight sensors w/ pulse width modulation. It uses the RP2040’s PIO (programmable I/O) interface instead of waiting for `time_pulse_us()`.
 * 2022-04-08
   - [MicroPython demo code](https://github.com/teuler/robotling2/tree/main/code/micropython) updated:
      - Fixed small compatibility issues with MicroPython v1.18
