@@ -20,7 +20,7 @@ from robotling_lib.platform.rp2 import board_rp2 as board
 from robotling_lib.misc.helpers import timed_function
 
 # pylint: disable=bad-whitespace
-__version__  = "0.1.2.0"
+__version__  = "0.1.3.0"
 
 # Global variables to communicate with task on core 1
 # (Do not access other than via the `RobotBase` instance!!)
@@ -71,7 +71,7 @@ class Robot(object):
       g_gui.on(True)
       g_gui.show_version()
       g_gui.show_general_info("n/a")
-      
+
     # Initialize servos/gait
     # (Has to happen after initializing (Pimoroni) display to re-claim pins)
     g_gait = gait.Gait()
@@ -86,7 +86,7 @@ class Robot(object):
         )
       time.sleep_ms(1000)
       g_dist_type = cfg.STY_EVOMINI
-      
+
     if "tof_pwm" in cfg.DEVICES:
       # 3x 1-channel Time-of-flight sensors w/ PWM output from Pololu
       g_dist_type = cfg.STY_TOF
@@ -95,11 +95,11 @@ class Robot(object):
         from robotling_lib.sensors.pololu_tof_ranging_pio import PololuTOFRangingSensor
         for i, p in enumerate(cfg.TOFPWM_PINS):
           g_dist_tof.append(PololuTOFRangingSensor(p, cfg.TOFPWM_PIOS[i]))
-      else:    
+      else:
         from robotling_lib.sensors.pololu_tof_ranging import PololuTOFRangingSensor
         for p in cfg.TOFPWM_PINS:
           g_dist_tof.append(PololuTOFRangingSensor(p))
-      
+
     # Depending on `core`, the thread that updates the hardware either runs
     # on the second core (`core` == 1) or on the same core as the main program
     # (`core` == 0). In the latter case, the classes `sleep_ms()` function
@@ -123,26 +123,26 @@ class Robot(object):
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def deinit(self):
     global g_state, g_gui
-    
-    glb.toLog("Deinit sensors ...")          
+
+    glb.toLog("Deinit sensors ...")
     if "tof_pwm" in cfg.DEVICES:
       for sens in g_dist_tof:
         sens.deinit()
-    
+
     if g_state is not glb.STATE_OFF:
-      glb.toLog("Powering down ...")  
+      glb.toLog("Powering down ...")
       self.power_down()
       while g_state is not glb.STATE_OFF:
         self.sleep_ms(25)
-        
-    glb.toLog("Turning servos off ...")      
+
+    glb.toLog("Turning servos off ...")
     self.turn_servos_off()
     if g_gui:
-      glb.toLog("Clearing display and LED ...")      
+      glb.toLog("Clearing display and LED ...")
       g_gui.deinit()
       g_gui.LED.RGB = (60,0,0)
-      
-    glb.toLog("Done.")        
+
+    glb.toLog("Done.")
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   @property
@@ -176,15 +176,15 @@ class Robot(object):
           _d[i] = cfg.EVOMINI_MIN_MM
         elif _d[i] == g_dist_evo.TERA_DIST_INVALID:
           _d[i] = -1
-      self._last_dist = _d    
+      self._last_dist = _d
       return _d
     elif g_dist_tof:
       _d = array.array("i", [0]*len(g_dist_tof))
       for i, tof in enumerate(g_dist_tof):
         _d[i] = int(tof.range_cm *10)
       self._last_dist = _d
-      return _d  
-    else:      
+      return _d
+    else:
       return []
 
   @property
@@ -204,8 +204,7 @@ class Robot(object):
   def exit_requested(self):
     """ Returns True if the `X` button was pressed during `sleep_ms()`
     """
-    return self._user_abort  
-
+    return self._user_abort
 
   # GUI-related properties
   @property
@@ -219,15 +218,15 @@ class Robot(object):
 
   @property
   def is_pressed_A(self):
-    return g_gui.display.is_pressed(g_gui.display.BUTTON_A) if g_gui else False
+    return g_gui._BtnA.is_pressed if g_gui else False
 
   @property
-  def is_pressed_B(self): 
-    return g_gui.display.is_pressed(g_gui.display.BUTTON_B) if g_gui else False
+  def is_pressed_B(self):
+    return g_gui._BtnB.is_pressed if g_gui else False
 
   @property
   def is_pressed_X(self):
-    return g_gui.display.is_pressed(g_gui.display.BUTTON_X) if g_gui else False
+    return g_gui._BtnX.is_pressed if g_gui else False
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   def update_display(self):
@@ -262,9 +261,9 @@ class Robot(object):
       g_move_rev = reverse
       if not self._no_servos:
         g_cmd = glb.CMD_MOVE
-        
+
   def move_backward(self, wait_for_idle=False):
-    self.move_forward(wait_for_idle, True)  
+    self.move_forward(wait_for_idle, True)
 
   def turn(self, dir, wait_for_idle=False):
     """ Turn using current gait and velocity; making with `dir` < 0 a left and
@@ -327,8 +326,8 @@ class Robot(object):
         if self._do_autoupdate_gui:
           self.update_display()
         if self.is_pressed_X:
-          self._user_abort = True  
-          return  
+          self._user_abort = True
+          return
         self._spin_t_last_ms = time.ticks_ms()
 
         # Check if sleep time is left ...
@@ -344,8 +343,8 @@ class Robot(object):
           if self._do_autoupdate_gui:
             self.update_display()
           if self.is_pressed_X:
-            self._user_abort = True  
-            return  
+            self._user_abort = True
+            return
 
         # Remember time of last update
         self._spin_t_last_ms = time.ticks_ms()
@@ -387,7 +386,7 @@ class Robot(object):
     if g_state is not glb.STATE_POWERING_DOWN:
       g_led.value(1)
 
-      # Handle new command, if any ... 
+      # Handle new command, if any ...
       if g_cmd is not glb.CMD_NONE:
 
         if g_cmd == glb.CMD_MOVE:
@@ -464,13 +463,13 @@ class Robot(object):
                 g_state = glb.STATE_WALKING if not g_move_rev else glb.STATE_REVERSING
               else:
                 g_state = glb.STATE_TURNING
-                
+
             if g_cmd in [glb.CMD_STOP, glb.CMD_POWER_DOWN]:
               # Stop or power down ...
               g_gait.stop()
               g_state = glb.STATE_STOPPING
               g_do_exit = g_cmd == glb.CMD_POWER_DOWN
-                
+
             g_cmd = glb.CMD_NONE
 
           # Wait for transitions to update state accordingly ...
@@ -484,7 +483,7 @@ class Robot(object):
           g_state_gait = g_gait.state
           if g_dist_evo:
             g_dist_evo.update(raw=False)
-          if g_gui:  
+          if g_gui:
             g_gui.spin()
           g_counter += 1
           g_led.value(0)

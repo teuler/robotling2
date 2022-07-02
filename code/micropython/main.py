@@ -36,16 +36,16 @@ if __name__ == "__main__":
     glb.toLog("Press `A` to start robot ...")
     while True:
       if Robot.is_pressed_A:
-        break  
+        break
       time.sleep_ms(25)
-  
+
   # Main loop
   glb.toLog("Starting main loop (press `X` to shutdown)")
   try:
     while not Robot.state == glb.STATE_OFF and is_running:
 
       # Get distance sensor readings depending on sensor type and calculate
-      # if obstacles and/or cliffs are detected ... 
+      # if obstacles and/or cliffs are detected ...
       if Robot.distance_sensor_type == cfg.STY_EVOMINI:
         dLLo, dLHi, dRLo, dRHi = Robot.distances_mm
         objL = (dLLo > 0 and dLLo < 65) or (dLHi > 0 and dLHi < 80)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         clfL = dLLo > 120
         clfR = dRLo > 120
         free = not objL and not objR and not objC and not clfL and not clfR
-        
+
       elif Robot.distance_sensor_type == cfg.STY_TOF:
         dL, dC, dR = Robot.distances_mm
         #print(dL, dC, dR)
@@ -66,10 +66,10 @@ if __name__ == "__main__":
         free = not objL and not objR and not objC and not clfL and not clfR
 
       if only_sensors:
-        # If only testing sensors, skip rest of main loop  
-        continue   
-          
-      # Act on detected objects and/or cliffs    
+        # If only testing sensors, skip rest of main loop
+        continue
+
+      # Act on detected objects and/or cliffs
       if free:
         if Robot.state is not glb.STATE_WALKING:
           Robot.move_forward()
@@ -110,7 +110,7 @@ if __name__ == "__main__":
       # Sleep for a while and, if running only on one core, make sure that
       # the robot's hardware is updated
       Robot.sleep_ms(25)
-      
+
       # Check if user pressed the X button
       is_running = not Robot.exit_requested
 
