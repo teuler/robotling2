@@ -10,6 +10,8 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2022-07-02
+  - Code updates to account for the new [unified display API](https://github.com/pimoroni/pimoroni-pico/blob/main/micropython/modules/picographics/README.md) in the MicroPython v1.19 firmware (beta) from Pimorono
 * 2022-04-15
   - New version of the [driver](https://github.com/teuler/robotling2/blob/main/code/micropython/robotling_lib/sensors/pololu_tof_ranging_pio.py) for Pololu time-of-flight sensors w/ pulse width modulation. It uses the RP2040’s PIO (programmable I/O) interface instead of waiting for `time_pulse_us()`.
 * 2022-04-08
