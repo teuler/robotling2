@@ -1,6 +1,6 @@
 # Robotling 2
 
-Robotling-2 is a small, simple 6-legged robot using the new Raspberry Pi micro controller [RP2040](https://www.raspberrypi.org/documentation/rp2040/getting-started/) as brain. To move around, it uses a simplified tripod walk that requires only three servo motors - inspired by a 20 year old book called ["Insectronics"](https://www.amazon.com/Insectronics-Build-Walking-Robot-Robotics-ebook/dp/B000W10R32). 
+Robotling-2 is a small, simple 6-legged robot using the new Raspberry Pi micro controller [RP2040](https://www.raspberrypi.org/documentation/rp2040/getting-started/) as brain. To move around, it uses a simplified tripod walk that requires only three servo motors - inspired by a 20 year old book called ["Insectronics"](https://books.google.de/books/about/Insectronics.html?id=dYZ-67WxUWkC&redir_esc=y).
 
 Except from the electronics and a few screws, it is fully 3D printed. Software is available for [MicroPython](https://github.com/teuler/robotling2/tree/main/code/micropython) and [MMBasic](https://github.com/teuler/robotling2/tree/main/code/mmbasic).
 
