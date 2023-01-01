@@ -16,5 +16,5 @@ The subfolder `mods_c_otto` contains parts contributed by **Carsten Otto**.
   This part is needed to attach Pololu's time-of-flight distance sensors (for details, see [here](https://github.com/teuler/robotling2/wiki/Sensoren#time-of-flight-sensoren)).
 - `board_carrier_v2.stl`<br>
   Allows for easier connecting the USB cable to the Pico.
--
-
+- `screen_holder.stl`, `sensor_bank_scd41.stl`, `servo_holder.stl`<br> 
+  Parts needed for the CO2 guard version of the robot. `servo_holder.stl` is mounted at the front of the PCB frame to hold a micro servo, which raises a display. `screen_holder.stl` holds this display and is mounted on the servo arm. Finally, `sensor_bank_scd41.stl` sits at the back of the PCB frame and allows to mount the SCD41 breakout containing the CO2 / temperature / humidity sensor.
