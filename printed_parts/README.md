@@ -17,4 +17,7 @@ The subfolder `mods_c_otto` contains parts contributed by **Carsten Otto**.
 - `board_carrier_v2.stl`<br>
   Allows for easier connecting the USB cable to the Pico.
 -
+screen_holder.stl
+sensor_bank_scd41.stl
 
+servo_holder.stl
