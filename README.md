@@ -10,6 +10,10 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 
 ### Release Notes
 
+* 2023-01-01
+  - MMBasic code for CO2 watchman version of the robot added ([`rbl2_co2_v101.bas`](https://github.com/teuler/robotling2/blob/main/code/mmbasic/rbl2_co2_v101.bas))
+  - `.stl' files for CO2 guard added (sensor, servo and display holders); updated FreeCAD file added.
+  - New [wiki page](https://github.com/teuler/robotling2/wiki/CO2-W%C3%A4chter) on the CO2 watchman added.
 * 2022-07-02
   - Code updates to account for the new [unified display API](https://github.com/pimoroni/pimoroni-pico/blob/main/micropython/modules/picographics/README.md) in the MicroPython v1.19 firmware (beta) from Pimorono
 * 2022-04-15
