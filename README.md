@@ -4,6 +4,8 @@ Robotling-2 is a small, simple 6-legged robot using the new Raspberry Pi micro c
 
 Except from the electronics and a few screws, it is fully 3D printed. Software is available for [MicroPython](https://github.com/teuler/robotling2/tree/main/code/micropython) and [MMBasic](https://github.com/teuler/robotling2/tree/main/code/mmbasic).
 
+**For the CO2 watchman (CO2-Wächter) version of the robot, see [here](https://github.com/teuler/robotling2/wiki/CO2-W%C3%A4chter)**
+
 Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and [video1](https://youtu.be/0tkTgc_Hvlo), [video2](https://youtu.be/2amrnnNkvMk).
 
 [<img src="https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif)[<img src="https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png)
