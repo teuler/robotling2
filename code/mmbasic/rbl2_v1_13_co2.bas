@@ -1,18 +1,19 @@
-' Robotling2
+' Robotling2 - CO2
 ' The MIT Licence (MIT)
-' Copyright (c) 2021-22 Thomas Euler
+' Copyright (c) 2021-23 Thomas Euler
 ' 2021-11-07 - v0.15, Initial release
 ' 2022-02-04 - v0.16, CO2 sensor added
 ' 2022-09-27 - v0.17, Changes towards CO2 sensing behaviour
 ' 2022-10-29 - v1.00, CO2 bot's first release
 ' 2022-11-12 - v1.01, resorting pins
+' 2022-02-18 - v1.13, small fixes, w/ ToF, Display, CO2-sensor
 ' ---------------------------------------------------------------------------
 ' Assumed options:
 '   OPTION COLOURCODE ON
 '   OPTION DISPLAY 64, 80
 '   OPTION CPUSPEED 133000
 '   OPTION SYSTEM SPI GP18,GP19,GP20
-'   OPTION LCDPANEL ST7789, LP, GP17,GP15,GP16,GP22
+'   OPTION LCDPANEL ST7789, RL, GP17,GP15,GP16,GP22
 '   OPTION AUTORUN ON
 '
 ' Display
@@ -32,7 +33,7 @@ Option Base 0
 Option Explicit
 
 ' Version information
-Const R.Version      = 1.01
+Const R.Version      = 1.13
 Const R.Name$        = "Robotling2"
 
 ' Sensor port pin definitions (robotling2 board)
@@ -184,7 +185,7 @@ RobotMain:
     EndIf
     If Not R.Sleeping Then
       ' If not sleeping, check if obstacles were detected ...
-      If ev And EV_ANYOBS = 0 Then
+      If (ev And EV_ANYOBS) = 0 Then
         ' Nothing detected, just walk
         R.Move FORWARD, 50
       ElseIf ev And EV_CLF Then
@@ -1171,4 +1172,4 @@ Sub SCD4X.ReadMeasurement CO2, T, Hum
   Hum = ((12500 *H_raw) >> 13) /1000
 End Sub
 
-' ---------------------------------------------------------------------------                                                                                                     
+' ---------------------------------------------------------------------------                                                                                                                   
