@@ -15,8 +15,9 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 * 2023-02-18
   - Replacing the Pololu voltage regulator U1V10F5, which is no longer available, by the type U3V16F5. Unfortunately, this is not a simple drop-in replacement, as the `VIn` and `VOut` are swapped. See [instructions](https://github.com/teuler/robotling2/wiki/Design-and-assembly-notes#voltage-regulator-module).
   - New versions of the [MMBasic code (v1.1x)](https://github.com/teuler/robotling2/blob/main/code/mmbasic).
+  - Added new [video](https://youtu.be/FfbP-4b5n9o).
 * 2023-01-01
-  - MMBasic code for CO2 watchman version of the robot added ([`rbl2_co2_v101.bas`](https://github.com/teuler/robotling2/blob/main/code/mmbasic/rbl2_co2_v101.bas))
+  - MMBasic code for CO2 watchman version of the robot added.
   - `.stl' files for CO2 guard added (sensor, servo and display holders); updated FreeCAD file added.
   - New [wiki page](https://github.com/teuler/robotling2/wiki/CO2-W%C3%A4chter) on the CO2 watchman added.
 * 2022-07-02
