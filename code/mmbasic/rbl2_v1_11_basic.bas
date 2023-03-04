@@ -1,12 +1,13 @@
 ' Robotling2 - basic
 ' The MIT Licence (MIT)
 ' Copyright (c) 2021-23 Thomas Euler
-' 2021-11-07 - v0.15, Initial release
-' 2022-02-04 - v0.16, CO2 sensor added
-' 2022-09-27 - v0.17, Changes towards CO2 sensing behaviour
-' 2022-10-29 - v1.00, CO2 bot's first release
-' 2022-11-12 - v1.01, resorting pins
-' 2023-02-18 - v1.11, small fixes, basic version (no display, no sensors)
+' 2021-11-07 - v0.15,  Initial release
+' 2022-02-04 - v0.16,  CO2 sensor added
+' 2022-09-27 - v0.17,  Changes towards CO2 sensing behaviour
+' 2022-10-29 - v1.00,  CO2 bot's first release
+' 2022-11-12 - v1.01,  resorting pins
+' 2023-02-18 - v1.11,  small fixes, basic version (no display, no sensors)
+' 2023-03-04 - v1.111, PWM assignment in one place; graceful exit on `Q`
 ' ---------------------------------------------------------------------------
 ' Assumed options:
 '   OPTION COLOURCODE ON
@@ -31,7 +32,7 @@ Option Base 0
 Option Explicit
 
 ' Version information
-Const R.Version      = 1.11
+Const R.Version      = 1.111
 Const R.Name$        = "Robotling2"
 
 ' Sensor port pin definitions (robotling2 board)
@@ -56,29 +57,33 @@ GoTo InitRobot
 
 ' Start of main program
 RobotMain:
-  Dim integer turns = 0, running = 1
-  Dim integer dir = TURN_RIGHT
+  Dim integer count = 0, turn = 0, dir = TURN_RIGHT
 
   ' Start moving
   R.Spin 500
-  Do While running
+  Do While R.running
 
-    ' Walk straight
-    R.Move FORWARD, 60
-    R.Spin 4000
+    If turn = 1 Then
+      ' Turn
+      R.Move dir, 60
+      R.Spin 5000
 
-    ' Turn
-    R.Move dir, 60
-    R.Spin 5000
-
-    ' Change direction of turn every 4 turns
-    If turns Mod 4 = 0 Then
-      dir = Choice(dir = TURN_LEFT, TURN_RIGHT, TURN_LEFT)
+      ' Change direction of turn every 4 turns
+      Inc count 1
+      If (count Mod 4) = 0 Then
+        dir = Choice(dir = TURN_LEFT, TURN_RIGHT, TURN_LEFT)
+      EndIf
+    Else
+      ' Walk straight
+      R.Move FORWARD, 60
+      R.Spin 4000
     EndIf
-    Inc turns, 1
+
+    ' Change between walking and turning
+    turn = Not(turn)
   Loop
 
-  ' Shutting down
+  ' Shutting down robot and exit
   R.Stop
   R.Spin 2000, END_OF_MOVE
   R.Shutdown
@@ -145,9 +150,12 @@ InitRobot:
   Read _gait()
 
   ' Internal pins (Robotling2 board)
-  Const R.M1  = 14 ' Servo motors
-  Const R.M2  = 27
-  Const R.M3  = 4
+  ' Note: If you change the pins were, make sure you also change the
+  ' respective PWM channels in `_PWM_M123` and `_SetPin_M123_` at the very
+  ' end of the program
+  Const R.M1  = 14 ' Servo motor 1 (PWM5A)
+  Const R.M2  = 27 ' Servo motor 2 (PWM2B)
+  Const R.M3  = 4  ' Servo motor 3 (PWM1A)
   Const R.LED = 15 ' Onboard LED
 
   ' Initialize hardware
@@ -170,6 +178,7 @@ Sub R.Init
   Dim integer _state = RBOT_NONE, _newState = RBOT_NONE
   Dim integer _curMode = STOP, _curVel = 0
   Dim integer _gaitPtr = -1, _dir(2) = (1,1,1)
+  Dim integer R.running = 1
 
   ' Servo motors
   Dim integer _serv_dt(2), _serv_da(2), _serv_nSteps = 0
@@ -246,11 +255,8 @@ Sub R.Stop
 End Sub
 
 Sub R.Shutdown
-  ' Switch off servor motors, RGB LED etc.
-  Local integer i
-  For i=1 To 5
-    PWM i, OFF
-  Next i
+  ' Switch off servor motors
+  R.ServoPower 0
 End Sub
 
 Function R.Mode()
@@ -264,13 +270,9 @@ Sub R.ServoPower(state)
   ' Switch servos on/off
   If R.SERVOS_ON = 0 Then Exit Sub
   If state Then
-    SetPin R.M1, PWM5A
-    SetPin R.M2, PWM2B
-    SetPin R.M3, PWM1A
+    _SetPin_M123
   Else
-    PWM 5, OFF
-    PWM 2, OFF
-    PWM 1, OFF
+    _PWM_M123 0,0,0, 1
   EndIf
 End Sub
 
@@ -288,12 +290,9 @@ Sub R.MoveServos(dt_ms, a1_deg, a2_deg, a3_deg)
       _serv_curPos(0,i) = a(i)
       _serv_curPos(1,i) = _serv_trgPos(1,i)
     EndIf
-    'Print i, _serv_curPos(0,i), a(i), _serv_trgPos(1,i), _serv_step(1,i), n
   Next i
   If n = 1 And R.SERVOS_ON Then
-    PWM 5, SERV_FREQ_HZ, _serv_trgPos(1,0)
-    PWM 2, SERV_FREQ_HZ,,_serv_trgPos(1,1)
-    PWM 1, SERV_FREQ_HZ, _serv_trgPos(1,2)
+    _PWM_M123 _serv_trgPos(1,0), _serv_trgPos(1,1), _serv_trgPos(1,2)
     _serv_nSteps = 0
   Else
     _serv_nSteps = n
@@ -320,9 +319,15 @@ Sub R.Spin(tout_ms, untilMoveDone)
   '
   Local integer t, t0=Timer, n=Max(0, tout_ms) /SPIN_STEP_MS
   Do
-    ' Update stuff (e.g. gait)
+     ' Update stuff
     t = Timer
     _cb_gait
+    If R.running And UCase$(Inkey$) = "Q" Then
+      ' Key `q` was pressed, shutdown robot ...
+      R.running = 0
+      n = 1
+      R.Log INFO, "`Q` pressed, waiting for move to end ..."
+    EndIf
     If untilMoveDone = 1 And _serv_nSteps = 0 Then Exit Sub
 
     ' Pause for the rest of the time slot
@@ -354,14 +359,10 @@ Sub _cb_moveServos
       _serv_curPos(0,i) = _serv_curPos(0,i) +_serv_step(0,i)
       _serv_curPos(1,i) = _serv_curPos(1,i) +_serv_step(1,i)
     Next i
-    PWM 5, SERV_FREQ_HZ, _serv_curPos(1,0)
-    PWM 2, SERV_FREQ_HZ,,_serv_curPos(1,1)
-    PWM 1, SERV_FREQ_HZ, _serv_curPos(1,2)
+    _PWM_M123 _serv_curPos(1,0), _serv_curPos(1,1), _serv_curPos(1,2)
     _serv_nSteps = _serv_nSteps -1
     If _serv_nSteps = 0 Then
-      PWM 5, SERV_FREQ_HZ, _serv_trgPos(1,0)
-      PWM 2, SERV_FREQ_HZ,,_serv_trgPos(1,1)
-      PWM 1, SERV_FREQ_HZ, _serv_trgPos(1,2)
+      _PWM_M123 _serv_trgPos(1,0), _serv_trgPos(1,1), _serv_trgPos(1,2)
       For i=0 To 2
         _serv_curPos(0,i) = _serv_trgPos(0,i)
         _serv_curPos(1,i) = _serv_trgPos(1,i)
@@ -441,4 +442,24 @@ Function _Angle2Duty(i, a_deg) As float
   _Angle2Duty = t /SERV_FREQ_HZ
 End Function
 
-' ---------------------------------------------------------------------------                   
+' - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Sub _SetPin_M123
+  SetPin R.M1, PWM5A
+  SetPin R.M2, PWM2B
+  SetPin R.M3, PWM1A
+End Sub
+
+Sub _PWM_M123 p0, p1, p2, off
+  ' Set PWM for all walk servos or switch off (`off` == 1)
+  If off Then
+    PWM 5, OFF
+    PWM 2, OFF
+    PWM 1, OFF
+  Else
+    PWM 5, SERV_FREQ_HZ, p0
+    PWM 2, SERV_FREQ_HZ,,p1
+    PWM 1, SERV_FREQ_HZ, p2
+  EndIf
+End Sub
+
+' ---------------------------------------------------------------------------                                                                                                   
