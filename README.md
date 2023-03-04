@@ -13,6 +13,9 @@ For the CO2-sensor version of the robot, see [here](https://github.com/teuler/ro
 
 ### Release Notes
 
+* 2023-03-04
+  - MMBasic code updated: `Q` now stops program gracefully, Servo-Pin handling in one place at the end of the program (see also [here](https://github.com/teuler/robotling2/wiki/Kommentare-zum-MMBasic-Programm#hinweise-zu-servo-pin-belegung).
+  - Some edits in the Wiki
 * 2023-02-18
   - Replacing the Pololu voltage regulator U1V10F5, which is no longer available, by the type U3V16F5. Unfortunately, this is not a simple drop-in replacement, as the `VIn` and `VOut` are swapped. See [instructions](https://github.com/teuler/robotling2/wiki/Design-and-assembly-notes#voltage-regulator-module).
   - New versions of the [MMBasic code (v1.1x)](https://github.com/teuler/robotling2/blob/main/code/mmbasic).
