@@ -10,12 +10,13 @@ Kontakt: Carsten, caw beim make-magazin.de
 * "Freestyle" ohne Platine
 * Insektoides Design der der oberen Platte, mehr Platz für Experimente
 * Ein kleiner USB-ladbarer LiIon Akku passt inkl. Halter zwischen die Beine
-* Keine Kugellager, stattdessen dienen mehr 
-  M2 Schrauben als "Lager"
+* Keine Kugellager, stattdessen dienen mehr M2 Schrauben als "Lager" 
 * M3 Nylon Standoffs als Abstandhalter
 
+Von unten |
+:--|
+[<img src="https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Deadbug.jpg" alt="Drawing" width="720"/>](https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Deadbug.jpg)
 
-
-![](Deadbug.jpg)
-
-![](Blenderbug.jpg)
+In Blender |
+:--|
+[<img src="https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blenderbug.jpg" alt="Drawing" width="720"/>](https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blenderbug.jpg)
