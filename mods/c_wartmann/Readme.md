@@ -1,12 +1,10 @@
-# Robotling2 für Blender
+## Robotling2 für Blender
 
 Kontakt: Carsten, caw beim make-magazin.de
 
-
-
-![](./Blendling.jpg)
-
-
+Übersicht |
+:--|
+[<img src="https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blendling.jpg" alt="Drawing" width="880"/>]https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blendling.jpg)
 
 * In Blender importiert für die Blenderheads
 * "Freestyle" ohne Platine
