@@ -13,6 +13,8 @@ For the CO2-sensor version of the robot, see [here](https://github.com/teuler/ro
 
 ### Release Notes
 
+* 2023-03-09
+  - Carsten Wartmann's [mod](https://github.com/teuler/robotling2/tree/main/mods/c_wartmann) added
 * 2023-03-04
   - MMBasic code updated: `Q` now stops program gracefully, Servo-Pin handling in one place at the end of the program (see also [here](https://github.com/teuler/robotling2/wiki/Kommentare-zum-MMBasic-Programm#hinweise-zu-servo-pin-belegung).
   - Some edits in the Wiki
