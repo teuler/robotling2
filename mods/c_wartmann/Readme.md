@@ -4,7 +4,7 @@ Kontakt: Carsten, caw beim make-magazin.de
 
 Übersicht |
 :--|
-[<img src="https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blendling.jpg" alt="Drawing" width="880"/>]https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blendling.jpg)
+[<img src="https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blendling.jpg" alt="Drawing" width="720"/>](https://github.com/teuler/robotling2/blob/main/mods/c_wartmann/Blendling.jpg)
 
 * In Blender importiert für die Blenderheads
 * "Freestyle" ohne Platine
