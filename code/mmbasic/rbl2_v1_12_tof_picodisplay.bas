@@ -244,7 +244,7 @@ InitRobot:
 
   ' Internal pins (Robotling2 board)
   ' Note: If you change the pins were, make sure you also change the
-  ' respective PWM channels in `_PWM_M123` and `_SetPin_M123_` at the very
+  ' respective PWM channels in `_PWM_M123` and `_SetPin_M123` at the very
   ' end of the program
   Const R.M1  = 14 ' Servo motor 1 (PWM5A)
   Const R.M2  = 27 ' Servo motor 2 (PWM2B)
