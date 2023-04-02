@@ -13,3 +13,12 @@ The current beta version of MMBasic (`PicoMiteV5.07.07b33.uf2` and higher; [down
   Library-enabled versions of the programs above. 
 - `rbl_lib.bas`  
   Library with all robot-related functions, subroutines, constants, and variables.
+
+To use the new programs:
+1. Load library `rbl_lib.bas` onto the Pico using `xmodem r`, then save a copy of the library code in flash slot #3, delete previous library code and store the current code as library:
+  ```
+  flash overwrite 3
+  library delete
+  library save
+  ```
+3. 
