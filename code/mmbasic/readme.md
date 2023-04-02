@@ -7,4 +7,9 @@
 - `rbl2_v1_11_basic`  
   Basic version (no sensors, no display). Walks in a square (sort of). Will run into obstacles or fall of the table!
   
-The current beta version of MMBasic (`PicoMiteV5.07.07b33.uf2` and higher; [download](https://geoffg.net/picomite.html)) implements `LIBRARY` commands, which allow to "extend" MMBasic with a set of functions (in form of another `.bas` program). Multiple libraries can be used and they occupy the flash slot #4.
+The current beta version of MMBasic (`PicoMiteV5.07.07b33.uf2` and higher; [download](https://geoffg.net/picomite.html)) implements `LIBRARY` commands, which allow to "extend" MMBasic with a set of functions (in form of another `.bas` program). Multiple libraries can be used and they occupy the flash slot #4. By moving all robot functions and subroutines (`R.xxx`) into a library, the programs become much shorter and common functions (now in the library) are much easier to maintain between programs. To demonstrate this, I converted the two of the demo programs such that they use a common library.
+
+- `rbl2_v1_21_basic`, `rbl2_v1_22_tof_picodisplay.bas`  
+  Library-enabled versions of the programs above. 
+- `rbl_lib.bas`  
+  Library with all robot-related functions, subroutines, constants, and variables.
