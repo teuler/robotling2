@@ -15,10 +15,19 @@ The current beta version of MMBasic (`PicoMiteV5.07.07b33.uf2` and higher; [down
   Library with all robot-related functions, subroutines, constants, and variables.
 
 To use the new programs:
-1. Load library `rbl_lib.bas` onto the Pico using `xmodem r`, then save a copy of the library code in flash slot #3, delete previous library code and store the current code as library:
-  ```
-  flash overwrite 3
-  library delete
-  library save
-  ```
-3. 
+- Load library `rbl_lib.bas` onto the Pico using `xmodem r`, then:
+     ```
+     flash overwrite 3  ' Save original library code
+     library delete     ' Delete previous libraries 
+     library save       ' Save current code as library
+     ```
+- When saving as library, the code is stripped of all extra stuff (e.g. comments, white spaces etc.). To make a change to the original library code, use the copy in flash slot #3. Don't forget to save your main program before you load the library into the editor:
+     ```
+     flash overwrite 1  ' Save main program, if any, in slot #1
+     flash load 3       ' Load original library code from slot #3
+     edit               ' Make your changes
+     flash overwrite 3  ' Save changed library code
+     library delete     ' Delete previous libraries
+     library save       ' Save current code as library
+     ```
+     
