@@ -13,6 +13,9 @@ For the CO2-sensor version of the robot, see [here](https://github.com/teuler/ro
 
 ### Release Notes
 
+* 2023-04-01
+  - Own wiki page for MMBasic [robot API](https://github.com/teuler/robotling2/wiki/Robotling-API-(MMBasic))
+  - Now MMBasic program versions that use the new `LIBRARY` function
 * 2023-03-09
   - Carsten Wartmann's [mod](https://github.com/teuler/robotling2/tree/main/mods/c_wartmann) added
 * 2023-03-04
