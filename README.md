@@ -1,15 +1,13 @@
 # Robotling 2
 
-Robotling-2 is a small, simple 6-legged robot using the new Raspberry Pi micro controller [RP2040](https://www.raspberrypi.org/documentation/rp2040/getting-started/) as brain. To move around, it uses a simplified tripod walk that requires only three servo motors - inspired by a 20 year old book called ["Insectronics"](https://books.google.de/books/about/Insectronics.html?id=dYZ-67WxUWkC&redir_esc=y).
-
-Except from the electronics and a few screws, it is fully 3D printed. Software is available for [MicroPython](https://github.com/teuler/robotling2/tree/main/code/micropython) and [MMBasic](https://github.com/teuler/robotling2/tree/main/code/mmbasic).
+Robotling-2 is a small, simple 6-legged robot using the new Raspberry Pi micro controller [RP2040](https://www.raspberrypi.org/documentation/rp2040/getting-started/) as brain. To move around, it uses a simplified tripod walk that requires only three servo motors - inspired by a 20 year old book called ["Insectronics"](https://books.google.de/books/about/Insectronics.html?id=dYZ-67WxUWkC&redir_esc=y). Except from the electronics and a few screws, it is fully 3D printed. Software is available for [MicroPython](https://github.com/teuler/robotling2/tree/main/code/micropython) and [MMBasic](https://github.com/teuler/robotling2/tree/main/code/mmbasic).
 
 Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and [video1](https://youtu.be/0tkTgc_Hvlo), [video2](https://youtu.be/2amrnnNkvMk), and [video3](https://youtu.be/FfbP-4b5n9o).
 
 [<img src="https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif)[<img src="https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png)
 
 ### CO2 watchman ("CO2-Wächter")
-For the CO2-sensor version of the robot, see videos ([preview](https://www.youtube.com/watch?v=FfbP-4b5n9o), [building instructions](https://www.youtube.com/watch?v=BkKGJZfBE3s)). For the MMBasic code, see [here](https://github.com/teuler/robotling2/blob/main/code/mmbasic).
+For the CO2-sensor version of the robot, see videos ([preview](https://www.youtube.com/watch?v=FfbP-4b5n9o), [building instructions](https://www.youtube.com/watch?v=BkKGJZfBE3s)). The robot is featured in an [article in the German Make Magazin 2/23](https://www.heise.de/select/make/2023/2/2304416150000430138). For the MMBasic code, see [here](https://github.com/teuler/robotling2/blob/main/code/mmbasic).
 
 ### Release Notes
 
