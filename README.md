@@ -9,7 +9,7 @@ Check out the [Wiki](https://github.com/teuler/robotling2/wiki) for details and 
 [<img src="https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/GIF3.gif)[<img src="https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png" alt="Drawing" width="400"/>](https://github.com/teuler/robotling2/blob/main/pictures/IMG_7990.png)
 
 ### CO2 watchman ("CO2-Wächter")
-For the CO2-sensor version of the robot, see [here](https://github.com/teuler/robotling2/wiki/CO2-W%C3%A4chter). The code is available [here](https://github.com/teuler/robotling2/blob/main/code/mmbasic) (versions `rbl2_v1_1*.bas`).
+For the CO2-sensor version of the robot, see videos ([preview](https://www.youtube.com/watch?v=FfbP-4b5n9o), [building instructions](https://www.youtube.com/watch?v=BkKGJZfBE3s)). For the MMBasic code, see [here](https://github.com/teuler/robotling2/blob/main/code/mmbasic).
 
 ### Release Notes
 
