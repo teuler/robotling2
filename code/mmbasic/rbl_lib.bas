@@ -111,7 +111,8 @@ Const POLOLU_TOF_50  = 2 ' #4064, 1-50 cm, pulse-width
 Const SERV_STEP_MS   = 15
 Const SERV_MAX_VEL   = 100
 Const SERV_FREQ_HZ   = 100
-Dim integer _serv_range_us(1,2)  = (840,1640, 1040,1840, 1790,2190)
+Dim integer _serv_range_us(1,2)  =(899,1600, 1149,1800, 1869,2065)
+'Dim integer _serv_range_us(1,2)  = (840,1640, 1040,1840, 1790,2190)
 Dim integer _serv_range_deg(1,2) = (-40, 40, -40, 40, -20, 20)
 
 ' Gait
@@ -773,6 +774,8 @@ End Sub
 
 Sub _PWM_M123 p0, p1, p2, off
   ' Set PWM for all walk servos or switch off (`off` == 1)
+  ' `p0`to `p2` are duty cycle in percent for `SERV_FREQ_HZ' = 100 Hz,
+  ' and hence, can be considered time in ms*10 
   If off Then
     PWM 5, OFF
     PWM 2, OFF
@@ -784,4 +787,4 @@ Sub _PWM_M123 p0, p1, p2, off
   EndIf
 End Sub
 
-' ---------------------------------------------------------------------------        
+' ---------------------------------------------------------------------------
