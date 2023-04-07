@@ -11,6 +11,8 @@ For the CO2-sensor version of the robot, see videos ([preview](https://www.youtu
 
 ### Release Notes
 
+* 2023-04-07
+  - [Servo calibration program](https://github.com/teuler/robotling2/blob/main/code/mmbasic/rbl_servo_calibration.bas) in MMBasic added
 * 2023-04-01
   - Own wiki page for MMBasic [robot API](https://github.com/teuler/robotling2/wiki/Robotling-API-(MMBasic))
   - Now MMBasic program versions that use the new `LIBRARY` function
