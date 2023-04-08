@@ -2,6 +2,7 @@
 ' The MIT Licence (MIT)
 ' Copyright (c) 2021-23 Thomas Euler
 ' 2023-04-01 - v1.00,  Initial release
+' 2023-04-07 - v1.01,  Allow for using a configuration file (`rbl.cfg`)
 ' ---------------------------------------------------------------------------
 ' Assumes that:
 '   M1  = Pin 14 (GP10) -> Servo motor 1 (PWM5A)
@@ -21,6 +22,7 @@ Option Explicit
 ' Version information
 Const R.LibVersion = 1.0
 Const R.Name$      = "Robotling2"
+Const R.CfgFName$  = "rbl.cfg"
 
 ' Sensor port pin definitions (robotling2 board)
 Const R.TX  = 6   ' GP4  / COM2
@@ -111,7 +113,8 @@ Const POLOLU_TOF_50  = 2 ' #4064, 1-50 cm, pulse-width
 Const SERV_STEP_MS   = 15
 Const SERV_MAX_VEL   = 100
 Const SERV_FREQ_HZ   = 100
-Dim integer _serv_range_us(1,2)  = (899,1600, 1149,1800, 1869,2065)
+'Dim integer _serv_range_us(1,2)  =(899,1600, 1149,1800, 1769,2165)
+Dim integer _serv_range_us(1,2)  = (840,1640, 1040,1840, 1790,2190)
 Dim integer _serv_range_deg(1,2) = (-40, 40, -40, 40, -20, 20)
 
 ' Gait
@@ -145,6 +148,16 @@ Const R.KEY_A = 0
 Const R.KEY_B = 1
 Const R.KEY_X = 2
 Const R.KEY_Y = 3
+
+' Check for configuration file on A:
+If Len(Dir$("A:" +R.CfgFName, FILE)) > 0 Then
+  R.Log INFO, "Loading configuration from file ..."
+  R.ReadCfg
+  R.Log INFO, "Done."
+Else
+  R.Log INFO, "No configuration file found."
+EndIf
+
 
 ' Initialize hardware
 R.Init
@@ -225,6 +238,23 @@ Sub R.Init
   SetTick SERV_STEP_MS, _cb_moveServos, 1
 End Sub
 
+
+' - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Sub R.ReadCfg
+  ' Read configuration file `rbl.cfg`
+  Local string ln$
+  Local integer i
+  Open "A:" +R.CfgFName For Input As #1
+    For i=0 To 2
+      Line Input #1, ln$
+      _serv_range_us(0,i)  = Val(Field$(ln$, 2, ","))
+      _serv_range_us(1,i)  = Val(Field$(ln$, 3, ","))
+      _serv_range_deg(0,i) = Val(Field$(ln$, 4, ","))
+      _serv_range_deg(1,i) = Val(Field$(ln$, 5, ","))
+    Next i
+  Close #1
+End Sub    
+
 ' - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Function R.GetDisplayType()
   ' Try detecting the display (within limits)
@@ -253,12 +283,12 @@ Sub R.Power(state)
   If state = _curr_state Then Exit Sub
   If state = 0 Then
     ' Servos off, screen off (if any)
-    if R.DISPLAY Then Backlight 0
+    If R.DISPLAY Then Backlight 0
     R.ServoPower 0
     _curr_state = 0
   Else
     ' Screen on (if any); servos on, robot in neutral, if requested
-    if R.DISPLAY Then Backlight GUI_BKGL_MAX
+    If R.DISPLAY Then Backlight GUI_BKGL_MAX
     R.ServoPower 1
     _curr_state = 1
   EndIf
@@ -305,7 +335,7 @@ End Sub
 Sub R.Shutdown
   ' Switch off servor motors
   R.ServoPower 0
-  If R.DISPLAY Then Cls
+  If R.DISPLAY Then CLS
 End Sub
 
 Function R.Mode()
@@ -774,7 +804,7 @@ End Sub
 Sub _PWM_M123 p0, p1, p2, off
   ' Set PWM for all walk servos or switch off (`off` == 1)
   ' `p0`to `p2` are duty cycle in percent for `SERV_FREQ_HZ' = 100 Hz,
-  ' and hence, can be considered time in ms*10 
+  ' and hence, can be considered time in ms*10
   If off Then
     PWM 5, OFF
     PWM 2, OFF
