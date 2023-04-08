@@ -17,6 +17,8 @@ The current beta version of MMBasic (`PicoMiteV5.07.07b33.uf2` and higher; [down
   Library-enabled versions of the programs above. 
 - `rbl_lib.bas`  
   Library with all robot-related functions, subroutines, constants, and variables.
+- `rbl_servo_calibration.bas`  
+  Interactive servo calibration program.
 
 To use the new programs:
 - Load library `rbl_lib.bas` onto the Pico using `xmodem r`, then:
